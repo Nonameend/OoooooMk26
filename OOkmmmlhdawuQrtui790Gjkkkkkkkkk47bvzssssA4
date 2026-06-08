@@ -3312,45 +3312,99 @@ end)
 ]]},
 {Text = {vn = "Chống Fling", en = "Anti Fling"}, Script = [[
 local Players = game.Players
+local Players = game.Players
 local LocalPlayer = Players.LocalPlayer
 
 _G.NoPlayerCollision = not _G.NoPlayerCollision
+_G.NoPlayerCollisionFolder = _G.NoPlayerCollisionFolder or nil
 
-if _G.NoPlayerCollision then
-	print("Đã Bật Anti Fling")
+local function clearFolder()
+	if _G.NoPlayerCollisionFolder then
+		_G.NoPlayerCollisionFolder:Destroy()
+		_G.NoPlayerCollisionFolder = nil
+	end
+end
 
-	task.spawn(function()
-		while _G.NoPlayerCollision do
-			local char = LocalPlayer.Character
+local function getBaseParts(char)
+	local t = {}
+	if not char then
+		return t
+	end
 
-			if char then
-				for _, plr in ipairs(Players:GetPlayers()) do
-					if plr ~= LocalPlayer and plr.Character then
-						for _, part in ipairs(plr.Character:GetDescendants()) do
-							if part:IsA("BasePart") then
-								part.CanCollide = false
-							end
-						end
-					end
-				end
-			end
-
-			task.wait(0.2)
+	for _, v in ipairs(char:GetDescendants()) do
+		if v:IsA("BasePart") then
+			t[#t + 1] = v
 		end
-	end)
-else
-	print("Đã Tắt Anti Fling")
+	end
+
+	return t
+end
+
+local function applyNoPlayerCollision()
+	clearFolder()
+
+	local char = LocalPlayer.Character
+	if not char then
+		return
+	end
+
+	local folder = Instance.new("Folder")
+	folder.Name = "NoPlayerCollisionFolder"
+	folder.Parent = char
+	_G.NoPlayerCollisionFolder = folder
+
+	local myParts = getBaseParts(char)
 
 	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr.Character then
-			for _, part in ipairs(plr.Character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = true
+		if plr ~= LocalPlayer and plr.Character then
+			local theirParts = getBaseParts(plr.Character)
+
+			for _, myPart in ipairs(myParts) do
+				for _, theirPart in ipairs(theirParts) do
+					if myPart.Parent and theirPart.Parent then
+						local c = Instance.new("NoCollisionConstraint")
+						c.Part0 = myPart
+						c.Part1 = theirPart
+						c.Parent = folder
+					end
 				end
 			end
 		end
 	end
 end
+
+local function removeNoPlayerCollision()
+	clearFolder()
+end
+
+if _G.NoPlayerCollision then
+	print("Đã Bật Anti Fling")
+	applyNoPlayerCollision()
+else
+	print("Đã Tắt Anti Fling")
+	removeNoPlayerCollision()
+end
+
+LocalPlayer.CharacterAdded:Connect(function()
+	if _G.NoPlayerCollision then
+		task.wait(0.2)
+		applyNoPlayerCollision()
+	end
+end)
+
+Players.PlayerAdded:Connect(function()
+	if _G.NoPlayerCollision then
+		task.wait(0.2)
+		applyNoPlayerCollision()
+	end
+end)
+
+Players.PlayerRemoving:Connect(function()
+	if _G.NoPlayerCollision then
+		task.wait(0.2)
+		applyNoPlayerCollision()
+	end
+end)
 ]]},
 }},
 
@@ -10321,7 +10375,7 @@ local function startBom2devGUI()
 	Instance.new("UICorner", header).CornerRadius = UDim.new(0, 14)
 
 	local title = Instance.new("TextLabel", header)
-	title.Text = "Bom2dev Hub V9.71"
+	title.Text = "Bom2dev Hub V9.75"
 	title.Font = Enum.Font.GothamBold
 	title.TextScaled = true
 	title.TextColor3 = Color3.fromRGB(255, 0, 0)
