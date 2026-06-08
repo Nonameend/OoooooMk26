@@ -3310,6 +3310,48 @@ box.FocusLost:Connect(function(enterPressed)
 	end
 end)
 ]]},
+{Text = {vn = "Chống Fling", en = "Anti Fling"}, Script = [[
+local Players = game.Players
+local LocalPlayer = Players.LocalPlayer
+
+_G.NoPlayerCollision = not _G.NoPlayerCollision
+
+if _G.NoPlayerCollision then
+	print("Đã Bật Anti Fling")
+
+	task.spawn(function()
+		while _G.NoPlayerCollision do
+			local char = LocalPlayer.Character
+
+			if char then
+				for _, plr in ipairs(Players:GetPlayers()) do
+					if plr ~= LocalPlayer and plr.Character then
+						for _, part in ipairs(plr.Character:GetDescendants()) do
+							if part:IsA("BasePart") then
+								part.CanCollide = false
+							end
+						end
+					end
+				end
+			end
+
+			task.wait(0.2)
+		end
+	end)
+else
+	print("Đã Tắt Anti Fling")
+
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr.Character then
+			for _, part in ipairs(plr.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = true
+				end
+			end
+		end
+	end
+end
+]]},
 }},
 
 {Text = {vn = "Bầu Trời", en = "Sky"}, Scripts = {
