@@ -3315,173 +3315,108 @@ local Players = game.Players
 local LocalPlayer = Players.LocalPlayer
 
 _G.NoPlayerCollision = not _G.NoPlayerCollision
-_G.NoPlayerCollisionFolder = _G.NoPlayerCollisionFolder or nil
+_G.NoPlayerCollisionFolder = _G.NoPlayerCollisionFolder
 
-local enabled = _G.NoPlayerCollision
-local localCharConn = nil
-local playerAddedConn = nil
-local playerRemovingConn = nil
-local playerCharConns = {}
-
-local function clearFolder()
+local function clearConstraints()
 	if _G.NoPlayerCollisionFolder then
 		_G.NoPlayerCollisionFolder:Destroy()
 		_G.NoPlayerCollisionFolder = nil
 	end
 end
 
-local function disconnectPlayerConns()
-	if localCharConn then
-		localCharConn:Disconnect()
-		localCharConn = nil
+local function getParts(model)
+	local parts = {}
+
+	if not model then
+		return parts
 	end
 
-	if playerAddedConn then
-		playerAddedConn:Disconnect()
-		playerAddedConn = nil
-	end
-
-	if playerRemovingConn then
-		playerRemovingConn:Disconnect()
-		playerRemovingConn = nil
-	end
-
-	for _, conn in pairs(playerCharConns) do
-		if conn then
-			conn:Disconnect()
-		end
-	end
-
-	table.clear(playerCharConns)
-end
-
-local function getBaseParts(char)
-	local t = {}
-	if not char then
-		return t
-	end
-
-	for _, v in ipairs(char:GetDescendants()) do
+	for _, v in ipairs(model:GetDescendants()) do
 		if v:IsA("BasePart") then
-			t[#t + 1] = v
+			table.insert(parts, v)
 		end
 	end
 
-	return t
+	return parts
 end
 
-local function applyNoPlayerCollision()
-	if not enabled then
+local function apply()
+	clearConstraints()
+
+	local myChar = LocalPlayer.Character
+	if not myChar then
 		return
-	end
-
-	clearFolder()
-
-	local char = LocalPlayer.Character
-	if not char or not char.Parent then
-		return
-	end
-
-	if not char:FindFirstChild("HumanoidRootPart") then
-		char:WaitForChild("HumanoidRootPart", 2)
 	end
 
 	local folder = Instance.new("Folder")
 	folder.Name = "NoPlayerCollisionFolder"
-	folder.Parent = char
+	folder.Parent = myChar
+
 	_G.NoPlayerCollisionFolder = folder
 
-	local myParts = getBaseParts(char)
+	local myParts = getParts(myChar)
 
 	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer and plr.Character and plr.Character.Parent then
-			local theirParts = getBaseParts(plr.Character)
+		if plr ~= LocalPlayer and plr.Character then
+			local otherParts = getParts(plr.Character)
 
 			for _, myPart in ipairs(myParts) do
-				if myPart and myPart.Parent then
-					for _, theirPart in ipairs(theirParts) do
-						if theirPart and theirPart.Parent then
-							local c = Instance.new("NoCollisionConstraint")
-							c.Part0 = myPart
-							c.Part1 = theirPart
-							c.Parent = folder
-						end
-					end
+				for _, otherPart in ipairs(otherParts) do
+					local nc = Instance.new("NoCollisionConstraint")
+					nc.Part0 = myPart
+					nc.Part1 = otherPart
+					nc.Parent = folder
 				end
 			end
 		end
 	end
 end
 
-local function removeNoPlayerCollision()
-	clearFolder()
-end
-
-local function bindPlayer(plr)
-	if plr == LocalPlayer then
-		return
-	end
-
-	if playerCharConns[plr] then
-		playerCharConns[plr]:Disconnect()
-		playerCharConns[plr] = nil
-	end
-
-	playerCharConns[plr] = plr.CharacterAdded:Connect(function()
-		if enabled then
-			task.defer(function()
-				applyNoPlayerCollision()
-			end)
-		end
-	end)
-end
-
-if enabled then
+if _G.NoPlayerCollision then
 	print("Đã Bật Anti Fling")
-else
-	print("Đã Tắt Anti Fling")
-end
 
-disconnectPlayerConns()
+	apply()
 
-if enabled then
-	localCharConn = LocalPlayer.CharacterAdded:Connect(function()
-		task.defer(function()
-			if enabled then
-				applyNoPlayerCollision()
+	if _G.NoPlayerCollision_LocalConn then
+		_G.NoPlayerCollision_LocalConn:Disconnect()
+	end
+
+	_G.NoPlayerCollision_LocalConn =
+		LocalPlayer.CharacterAdded:Connect(function()
+			task.wait(1)
+			if _G.NoPlayerCollision then
+				apply()
 			end
 		end)
-	end)
 
-	playerAddedConn = Players.PlayerAdded:Connect(function(plr)
-		bindPlayer(plr)
-		if enabled then
-			task.defer(function()
-				applyNoPlayerCollision()
-			end)
-		end
-	end)
-
-	playerRemovingConn = Players.PlayerRemoving:Connect(function(plr)
-		if playerCharConns[plr] then
-			playerCharConns[plr]:Disconnect()
-			playerCharConns[plr] = nil
-		end
-
-		if enabled then
-			task.defer(function()
-				applyNoPlayerCollision()
-			end)
-		end
-	end)
-
-	for _, plr in ipairs(Players:GetPlayers()) do
-		bindPlayer(plr)
+	if _G.NoPlayerCollision_PlayerConn then
+		_G.NoPlayerCollision_PlayerConn:Disconnect()
 	end
 
-	applyNoPlayerCollision()
+	_G.NoPlayerCollision_PlayerConn =
+		Players.PlayerAdded:Connect(function(plr)
+			plr.CharacterAdded:Connect(function()
+				task.wait(1)
+				if _G.NoPlayerCollision then
+					apply()
+				end
+			end)
+		end)
+
 else
-	removeNoPlayerCollision()
+	print("Đã Tắt Anti Fling")
+
+	clearConstraints()
+
+	if _G.NoPlayerCollision_LocalConn then
+		_G.NoPlayerCollision_LocalConn:Disconnect()
+		_G.NoPlayerCollision_LocalConn = nil
+	end
+
+	if _G.NoPlayerCollision_PlayerConn then
+		_G.NoPlayerCollision_PlayerConn:Disconnect()
+		_G.NoPlayerCollision_PlayerConn = nil
+	end
 end
 ]]},
 }},
