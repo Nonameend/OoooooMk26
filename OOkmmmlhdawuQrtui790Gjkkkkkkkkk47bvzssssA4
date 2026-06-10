@@ -7350,6 +7350,7 @@ end)
 
 local Players = game.Players
 local RunService = game.RunService
+local TweenService = game:GetService("TweenService")
 
 local Player = Players.LocalPlayer
 
@@ -7490,8 +7491,10 @@ local function StartFling()
 	end
 
 	local Running = true
-	local CurrentPower = 1
-	local TargetPower = 1
+	local PowerValue = Instance.new("NumberValue")
+PowerValue.Value = 1
+
+local CurrentTween
 
 	local Conn
 	Conn = RunService.Heartbeat:Connect(function(dt)
@@ -7500,20 +7503,36 @@ local function StartFling()
 			return
 		end
 
-		if CurrentTrack and CurrentTrack.IsPlaying then
-			TargetPower = tonumber(PowerBox.Text) or 1
-		else
-			TargetPower = 1
-		end
+		local TargetPower = 1
 
-		local Speed = dt / 3
-		CurrentPower += (TargetPower - CurrentPower) * Speed
+if CurrentTrack and CurrentTrack.IsPlaying then
+	TargetPower = (tonumber(PowerBox.Text) or 1)
+end
+
+if math.abs(PowerValue.Value - TargetPower) > 0.1 then
+	if CurrentTween then
+		CurrentTween:Cancel()
+	end
+
+	CurrentTween = TweenService:Create(
+		PowerValue,
+		TweenInfo.new(
+			3,
+			Enum.EasingStyle.Linear
+		),
+		{
+			Value = TargetPower
+		}
+	)
+
+	CurrentTween:Play()
+end
 
 		local Vel = HRP.AssemblyLinearVelocity
 
 		HRP.AssemblyLinearVelocity =
-			Vel * CurrentPower +
-			Vector3.new(0, CurrentPower, 0)
+			Vel * PowerValue.Value +
+Vector3.new(0, PowerValue.Value, 0)
 
 		RunService.RenderStepped:Wait()
 
