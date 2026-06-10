@@ -7350,9 +7350,17 @@ end)
 
 local Players = game.Players
 local RunService = game.RunService
-local TweenService = game:GetService("TweenService")
-
 local Player = Players.LocalPlayer
+
+if Player.PlayerGui:FindFirstChild("AnimFlingGui") and Player:FindFirstChild("FlingAlreadyRunning") then
+    game.StarterGui:SetCore("SendNotification", {Title = "ERROR", Text = "", Duration = 5})
+    return
+end
+
+local alreadyRunning = Instance.new("BoolValue")
+alreadyRunning.Name = "FlingAlreadyRunning"
+alreadyRunning.Value = true
+alreadyRunning.Parent = Player
 
 pcall(function()
 	Player.PlayerGui:FindFirstChild("AnimFlingGui"):Destroy()
@@ -7395,14 +7403,14 @@ rainbow(stroke)
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0,110,0,125)
-frame.Position = UDim2.new(0.8,30,0.,0)
+frame.Position = UDim2.new(0.8,30,0,0)
 frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
 frame.BackgroundTransparency = 0.5
 frame.Visible = false
 frame.Active = true
 frame.Draggable = true
 frame.Parent = Gui
-Instance.new("UICorner", open).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
 
 local fs = Instance.new("UIStroke", frame)
 fs.Thickness = 2
@@ -7434,10 +7442,6 @@ PowerBox.Text = "10"
 PowerBox.ClearTextOnFocus = false
 PowerBox.Parent = frame
 
-local s1 = Instance.new("UIStroke")
-s1.Thickness = 1
-s1.Parent = PowerBox
-
 local Btn1 = Instance.new("TextButton")
 Btn1.Size = UDim2.new(1,0,0,35)
 Btn1.BackgroundColor3 = Color3.fromRGB(0,0,0)
@@ -7445,10 +7449,6 @@ Btn1.BackgroundTransparency = 0.5
 Btn1.TextColor3 = Color3.new(1,1,1)
 Btn1.Text = "Đá Xoay"
 Btn1.Parent = frame
-
-local s2 = Instance.new("UIStroke")
-s2.Thickness = 1
-s2.Parent = Btn1
 
 local Btn2 = Instance.new("TextButton")
 Btn2.Size = UDim2.new(1,0,0,35)
@@ -7458,134 +7458,61 @@ Btn2.TextColor3 = Color3.new(1,1,1)
 Btn2.Text = "Đá Mạnh"
 Btn2.Parent = frame
 
-local s3 = Instance.new("UIStroke")
-s3.Thickness = 1
-s3.Parent = Btn2
+local hiddenfling = true
+local flingConnection
+
+local function startFlingLoop()
+	if flingConnection then flingConnection:Disconnect() end
+	
+	flingConnection = RunService.Heartbeat:Connect(function()
+		local lp = Player
+		local c = lp.Character
+		local hrp = c and c:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+		
+		local multiplier = tonumber(PowerBox.Text) or 10
+		local vel = hrp.Velocity
+		local movel = 0.1
+		
+		hrp.Velocity = vel * (multiplier * 1) + Vector3.new(0, 10000, 0)
+		RunService.RenderStepped:Wait()
+		hrp.Velocity = vel
+		RunService.Stepped:Wait()
+		hrp.Velocity = vel + Vector3.new(0, movel, 0)
+	end)
+end
+
+startFlingLoop()
+
+Player.CharacterAdded:Connect(function()
+	task.wait(0.6)
+	startFlingLoop()
+end)
 
 local CurrentTrack
-local CurrentFlingStop
 
 local function StopCurrent()
 	if CurrentTrack then
-		pcall(function()
-			CurrentTrack:Stop()
-		end)
+		pcall(function() CurrentTrack:Stop() end)
 		CurrentTrack = nil
-	end
-
-	if CurrentFlingStop then
-		CurrentFlingStop()
-		CurrentFlingStop = nil
-	end
-end
-
-local function StartFling()
-	local Char = Player.Character
-	if not Char then return end
-
-	local HRP = Char:FindFirstChild("HumanoidRootPart")
-	local Hum = Char:FindFirstChildOfClass("Humanoid")
-
-	if not HRP or not Hum then
-		return
-	end
-
-	local Running = true
-	local PowerValue = Instance.new("NumberValue")
-PowerValue.Value = 1
-
-local CurrentTween
-
-	local Conn
-	Conn = RunService.Heartbeat:Connect(function(dt)
-		if not Running then
-			Conn:Disconnect()
-			return
-		end
-
-		local TargetPower = 1
-
-if CurrentTrack and CurrentTrack.IsPlaying then
-	TargetPower = (tonumber(PowerBox.Text) or 1)
-end
-
-if math.abs(PowerValue.Value - TargetPower) > 0.1 then
-	if CurrentTween then
-		CurrentTween:Cancel()
-	end
-
-	CurrentTween = TweenService:Create(
-		PowerValue,
-		TweenInfo.new(
-			3,
-			Enum.EasingStyle.Linear
-		),
-		{
-			Value = TargetPower
-		}
-	)
-
-	CurrentTween:Play()
-end
-
-		local Vel = HRP.AssemblyLinearVelocity
-
-		HRP.AssemblyLinearVelocity =
-			Vel * PowerValue.Value +
-Vector3.new(0, PowerValue.Value, 0)
-
-		RunService.RenderStepped:Wait()
-
-		if HRP then
-			HRP.AssemblyLinearVelocity = Vel
-		end
-	end)
-
-	return function()
-		Running = false
-
-		if HRP then
-			HRP.AssemblyLinearVelocity = Vector3.zero
-			HRP.AssemblyAngularVelocity = Vector3.zero
-		end
 	end
 end
 
 local function PlayAnim(animId)
 	StopCurrent()
-
 	local Char = Player.Character
 	if not Char then return end
-
 	local Hum = Char:FindFirstChildOfClass("Humanoid")
 	if not Hum then return end
-
-	local Animator =
-		Hum:FindFirstChildOfClass("Animator")
-		or Instance.new("Animator",Hum)
-
+	local Animator = Hum:FindFirstChildOfClass("Animator") or Instance.new("Animator", Hum)
 	local Anim = Instance.new("Animation")
-	Anim.AnimationId = "rbxassetid://"..animId
-
+	Anim.AnimationId = "rbxassetid://" .. animId
 	local Track = Animator:LoadAnimation(Anim)
-
 	Track.Priority = Enum.AnimationPriority.Action4
 	Track.Looped = false
-
-	CurrentFlingStop = StartFling()
-
 	Track:Play()
-
 	CurrentTrack = Track
-
-	Track.Stopped:Once(function()
-		if CurrentFlingStop then
-			CurrentFlingStop()
-			CurrentFlingStop = nil
-		end
-
-		CurrentTrack = nil
-	end)
+	Track.Stopped:Once(function() CurrentTrack = nil end)
 end
 
 Btn1.MouseButton1Click:Connect(function()
