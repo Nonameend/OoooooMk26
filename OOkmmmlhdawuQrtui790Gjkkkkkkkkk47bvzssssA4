@@ -7348,9 +7348,234 @@ end)
 
 {Text = {vn = "Đá Bay", en = "Fling"}, Script = [[
 
-local Players=game:GetService("Players");local RunService=game:GetService("RunService");local StarterGui=game:GetService("StarterGui");local LocalPlayer=Players.LocalPlayer;_G.WalkFlingEnabled=_G.WalkFlingEnabled or false;local walkflinging=false;local flingThread=nil;local steppedConn=nil;local function notify(t)pcall(function()StarterGui:SetCore("SendNotification",{Title="Đá Bay",Text=t,Duration=4})end)end;local function startWalkFling(char)local Root=char:WaitForChild("HumanoidRootPart");local Humanoid=char:WaitForChild("Humanoid");Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,false);Humanoid.BreakJointsOnDeath=false;walkflinging=true;Root.CanCollide=false;Humanoid:ChangeState(Enum.HumanoidStateType.Physics);steppedConn=RunService.Stepped:Connect(function()if walkflinging then Humanoid.Health=math.huge;Humanoid.MaxHealth=math.huge end end);flingThread=task.spawn(function()while walkflinging and Root and Root.Parent do RunService.Heartbeat:Wait();local vel=Root.AssemblyLinearVelocity;Root.AssemblyLinearVelocity=vel*999+Vector3.new(0,999,0);RunService.RenderStepped:Wait();Root.AssemblyLinearVelocity=vel;RunService.Stepped:Wait();Root.AssemblyLinearVelocity=vel+Vector3.new(0,0.1,0)end end)end;local function stopWalkFling()walkflinging=false;if steppedConn then steppedConn:Disconnect();steppedConn=nil end;if flingThread then task.cancel(flingThread);flingThread=nil end;local char=LocalPlayer.Character;if char then local Root=char:FindFirstChild("HumanoidRootPart");local Humanoid=char:FindFirstChildOfClass("Humanoid");if Root then Root.AssemblyLinearVelocity=Vector3.zero;Root.CanCollide=true end;if Humanoid then Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,true);Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)end end end;if not _G.WalkFlingEnabled then _G.WalkFlingEnabled=true;notify("Bật");if LocalPlayer.Character then startWalkFling(LocalPlayer.Character)end;LocalPlayer.CharacterAdded:Connect(function(c)if _G.WalkFlingEnabled then startWalkFling(c)end end)else _G.WalkFlingEnabled=false;stopWalkFling();notify("Tắt")end
+local Players = game.Players
+local RunService = game.RunService
 
+local Player = Players.LocalPlayer
 
+pcall(function()
+	Player.PlayerGui:FindFirstChild("AnimFlingGui"):Destroy()
+end)
+
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "AnimFlingGui"
+Gui.ResetOnSpawn = false
+Gui.Parent = Player.PlayerGui
+
+local function rainbow(obj)
+	task.spawn(function()
+		local h = 0
+		while obj and obj.Parent do
+			h = (h + 0.005) % 1
+			obj.Color = Color3.fromHSV(h, 1, 1)
+			task.wait(0.02)
+		end
+	end)
+end
+
+local open = Instance.new("TextButton")
+open.Size = UDim2.new(0,45,0,45)
+open.Position = UDim2.new(0.07,-30,0.2,0)
+open.BackgroundColor3 = Color3.fromRGB(0,0,0)
+open.BackgroundTransparency = 0.1
+open.TextColor3 = Color3.fromRGB(255,255,255)
+open.Font = Enum.Font.GothamBold
+open.TextSize = 14
+open.Text = "Fling"
+open.Parent = Gui
+open.Active = true
+open.Draggable = true
+Instance.new("UICorner", open).CornerRadius = UDim.new(0, 6)
+
+local stroke = Instance.new("UIStroke", open)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+rainbow(stroke)
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,110,0,125)
+frame.Position = UDim2.new(0.8,30,0.,0)
+frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+frame.BackgroundTransparency = 0.5
+frame.Visible = false
+frame.Active = true
+frame.Draggable = true
+frame.Parent = Gui
+Instance.new("UICorner", open).CornerRadius = UDim.new(0, 6)
+
+local fs = Instance.new("UIStroke", frame)
+fs.Thickness = 2
+rainbow(fs)
+
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0,5)
+padding.PaddingLeft = UDim.new(0,5)
+padding.PaddingRight = UDim.new(0,5)
+padding.PaddingBottom = UDim.new(0,5)
+padding.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,5)
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = frame
+
+open.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+end)
+
+local PowerBox = Instance.new("TextBox")
+PowerBox.Size = UDim2.new(1,0,0,30)
+PowerBox.BackgroundColor3 = Color3.fromRGB(0,0,0)
+PowerBox.BackgroundTransparency = 0.4
+PowerBox.TextColor3 = Color3.new(1,1,1)
+PowerBox.Text = "10"
+PowerBox.ClearTextOnFocus = false
+PowerBox.Parent = frame
+
+local s1 = Instance.new("UIStroke")
+s1.Thickness = 1
+s1.Parent = PowerBox
+
+local Btn1 = Instance.new("TextButton")
+Btn1.Size = UDim2.new(1,0,0,35)
+Btn1.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Btn1.BackgroundTransparency = 0.5
+Btn1.TextColor3 = Color3.new(1,1,1)
+Btn1.Text = "Đá Xoay"
+Btn1.Parent = frame
+
+local s2 = Instance.new("UIStroke")
+s2.Thickness = 1
+s2.Parent = Btn1
+
+local Btn2 = Instance.new("TextButton")
+Btn2.Size = UDim2.new(1,0,0,35)
+Btn2.BackgroundColor3 = Color3.fromRGB(0,0,0)
+Btn2.BackgroundTransparency = 0.5
+Btn2.TextColor3 = Color3.new(1,1,1)
+Btn2.Text = "Đá Mạnh"
+Btn2.Parent = frame
+
+local s3 = Instance.new("UIStroke")
+s3.Thickness = 1
+s3.Parent = Btn2
+
+local CurrentTrack
+local CurrentFlingStop
+
+local function StopCurrent()
+	if CurrentTrack then
+		pcall(function()
+			CurrentTrack:Stop()
+		end)
+		CurrentTrack = nil
+	end
+
+	if CurrentFlingStop then
+		CurrentFlingStop()
+		CurrentFlingStop = nil
+	end
+end
+
+local function StartFling()
+	local Char = Player.Character
+	if not Char then return end
+
+	local HRP = Char:FindFirstChild("HumanoidRootPart")
+	local Hum = Char:FindFirstChildOfClass("Humanoid")
+
+	if not HRP or not Hum then
+		return
+	end
+
+	local Running = true
+	local CurrentPower = 1
+	local TargetPower = 1
+
+	local Conn
+	Conn = RunService.Heartbeat:Connect(function(dt)
+		if not Running then
+			Conn:Disconnect()
+			return
+		end
+
+		if CurrentTrack and CurrentTrack.IsPlaying then
+			TargetPower = tonumber(PowerBox.Text) or 1
+		else
+			TargetPower = 1
+		end
+
+		local Speed = dt / 3
+		CurrentPower += (TargetPower - CurrentPower) * Speed
+
+		local Vel = HRP.AssemblyLinearVelocity
+
+		HRP.AssemblyLinearVelocity =
+			Vel * CurrentPower +
+			Vector3.new(0, CurrentPower, 0)
+
+		RunService.RenderStepped:Wait()
+
+		if HRP then
+			HRP.AssemblyLinearVelocity = Vel
+		end
+	end)
+
+	return function()
+		Running = false
+
+		if HRP then
+			HRP.AssemblyLinearVelocity = Vector3.zero
+			HRP.AssemblyAngularVelocity = Vector3.zero
+		end
+	end
+end
+
+local function PlayAnim(animId)
+	StopCurrent()
+
+	local Char = Player.Character
+	if not Char then return end
+
+	local Hum = Char:FindFirstChildOfClass("Humanoid")
+	if not Hum then return end
+
+	local Animator =
+		Hum:FindFirstChildOfClass("Animator")
+		or Instance.new("Animator",Hum)
+
+	local Anim = Instance.new("Animation")
+	Anim.AnimationId = "rbxassetid://"..animId
+
+	local Track = Animator:LoadAnimation(Anim)
+
+	Track.Priority = Enum.AnimationPriority.Action4
+	Track.Looped = false
+
+	CurrentFlingStop = StartFling()
+
+	Track:Play()
+
+	CurrentTrack = Track
+
+	Track.Stopped:Once(function()
+		if CurrentFlingStop then
+			CurrentFlingStop()
+			CurrentFlingStop = nil
+		end
+
+		CurrentTrack = nil
+	end)
+end
+
+Btn1.MouseButton1Click:Connect(function()
+	PlayAnim("118139885865308")
+end)
+
+Btn2.MouseButton1Click:Connect(function()
+	PlayAnim("133566007754001")
+end)
 
 ]]},
 
