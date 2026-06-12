@@ -7471,10 +7471,11 @@ local function startFlingLoop()
 		if not hrp then return end
 		
 		local multiplier = tonumber(PowerBox.Text) or 10
+        local VectorFlyA = multiplier * 100
 		local vel = hrp.Velocity
 		local movel = 0.1
 		
-		hrp.Velocity = vel * (multiplier * 1) + Vector3.new(0, 10000, 0)
+		hrp.Velocity = vel * (multiplier * 1) + Vector3.new(0, VectorFlyA, 0)
 		RunService.RenderStepped:Wait()
 		hrp.Velocity = vel
 		RunService.Stepped:Wait()
