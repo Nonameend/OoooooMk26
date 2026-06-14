@@ -921,7 +921,7 @@ end)
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 20)
 title.BackgroundTransparency = 1
-title.Text = "Bay V2"
+title.Text = "Bay"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 16
@@ -962,8 +962,9 @@ local rotateTween
 
 local flyTracks = {}
 local currentFlyTrack = nil
+local currentRigType = nil
 
-local fadeTime = 0.3
+local fadeTime = 0.5
 
 local function getChar()
 	return player.Character
@@ -1122,18 +1123,29 @@ local function stopFlyAnimations()
 		end)
 	end
 	flyTracks = {}
+	currentRigType = nil
 end
 
 local function loadFlyAnimations(hum)
 	stopFlyAnimations()
 
+	currentRigType = hum.RigType
 	local animator = getAnimator(hum)
 
-	local animIds = {
-		idle = "rbxassetid://77529400769588",
-		fast = "rbxassetid://92365791487740",
-		ultra = "rbxassetid://85064366773524"
-	}
+	local animIds
+
+	if currentRigType == Enum.HumanoidRigType.R6 then
+		animIds = {
+			idle = "rbxassetid://282574440",
+			move = "rbxassetid://282574440"
+		}
+	else
+		animIds = {
+			idle = "rbxassetid://77529400769588",
+			fast = "rbxassetid://92365791487740",
+			ultra = "rbxassetid://85064366773524"
+		}
+	end
 
 	for name, id in pairs(animIds) do
 		local anim = Instance.new("Animation")
@@ -1147,11 +1159,22 @@ local function loadFlyAnimations(hum)
 	end
 end
 
-local function getFlyAnimationName(speedValue)
-	if speedValue > 5 then
-		return "ultra"
+local function getFlyAnimationName(speedValue, moving)
+	if currentRigType == Enum.HumanoidRigType.R6 then
+		if moving then
+			return "move"
+		end
+		return "idle"
 	end
-	return "fast"
+
+	if moving then
+		if speedValue > 5 then
+			return "ultra"
+		end
+		return "fast"
+	end
+
+	return "idle"
 end
 
 local function setFlyAnimation(speedValue, moving)
@@ -1159,7 +1182,7 @@ local function setFlyAnimation(speedValue, moving)
 		return
 	end
 
-	local name = moving and getFlyAnimationName(speedValue) or "idle"
+	local name = getFlyAnimationName(speedValue, moving)
 	local track = flyTracks[name]
 	if not track then
 		return
@@ -1598,7 +1621,7 @@ info.TextColor3 = Color3.fromRGB(200,200,200)
 
 info.TextXAlignment = Enum.TextXAlignment.Left
 
-local MOVE_SPEED = 20
+local MOVE_SPEED = 10
 
 local STEP = 0.1
 
@@ -3213,7 +3236,7 @@ label.BackgroundTransparency = 1
 label.TextColor3 = Color3.fromRGB(255,255,255)
 label.TextStrokeTransparency = 0
 label.Font = Enum.Font.GothamBold
-label.TextScaled = true
+label.TextScaled = 14
 label.TextXAlignment = Enum.TextXAlignment.Center
 label.Text = "X: 0 | Y: 0 | Z: 0"
 
