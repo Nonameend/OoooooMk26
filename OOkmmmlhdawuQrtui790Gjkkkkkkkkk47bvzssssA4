@@ -874,7 +874,7 @@ end)
 
 ]]},
 
-{Text = {vn = "Bay", en = "Fly"}, Script = [[
+{Text = {vn = "Bay V2", en = "Fly V2"}, Script = [[
 
 local Players = game.Players
 local RunService = game.RunService
@@ -921,7 +921,7 @@ end)
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 20)
 title.BackgroundTransparency = 1
-title.Text = "Bay"
+title.Text = "Bay V2"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 16
@@ -950,18 +950,20 @@ flyBtn.Parent = main
 Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 8)
 
 local speeds = tonumber(speedBox.Text) or 1
-local moveScale = 1
-local ascendSpeed = 1
-
 local nowe = false
 local tpwalking = false
 
-local translateConns = {}
-local ascendConn
-local descendConn
+local translateConn
+local animationConn
 local activeBg
 local activeBv
+local rotateConn
 local rotateTween
+
+local flyTracks = {}
+local currentFlyTrack = nil
+
+local fadeTime = 0.3
 
 local function getChar()
 	return player.Character
@@ -1097,13 +1099,95 @@ local function createBodiesOn(part)
 	activeBv.Parent = part
 end
 
-local function runTranslateThread()
-	local conn
-	conn = RunService.Heartbeat:Connect(function(dt)
+local function getAnimator(hum)
+	local animator = hum:FindFirstChildOfClass("Animator")
+	if not animator then
+		animator = Instance.new("Animator")
+		animator.Parent = hum
+	end
+	return animator
+end
+
+local function stopFlyAnimations()
+	if currentFlyTrack then
+		pcall(function()
+			currentFlyTrack:Stop(fadeTime)
+		end)
+		currentFlyTrack = nil
+	end
+
+	for _, track in pairs(flyTracks) do
+		pcall(function()
+			track:Destroy()
+		end)
+	end
+	flyTracks = {}
+end
+
+local function loadFlyAnimations(hum)
+	stopFlyAnimations()
+
+	local animator = getAnimator(hum)
+
+	local animIds = {
+		idle = "rbxassetid://77529400769588",
+		fast = "rbxassetid://92365791487740",
+		ultra = "rbxassetid://85064366773524"
+	}
+
+	for name, id in pairs(animIds) do
+		local anim = Instance.new("Animation")
+		anim.AnimationId = id
+
+		local track = animator:LoadAnimation(anim)
+		track.Looped = true
+		track.Priority = Enum.AnimationPriority.Action4
+
+		flyTracks[name] = track
+	end
+end
+
+local function getFlyAnimationName(speedValue)
+	if speedValue > 5 then
+		return "ultra"
+	end
+	return "fast"
+end
+
+local function setFlyAnimation(speedValue, moving)
+	if not nowe then
+		return
+	end
+
+	local name = moving and getFlyAnimationName(speedValue) or "idle"
+	local track = flyTracks[name]
+	if not track then
+		return
+	end
+
+	if currentFlyTrack == track then
+		return
+	end
+
+	if currentFlyTrack then
+		pcall(function()
+			currentFlyTrack:Stop(fadeTime)
+		end)
+	end
+
+	currentFlyTrack = track
+	pcall(function()
+		currentFlyTrack:Play(fadeTime, 1, 1)
+	end)
+end
+
+local function startTranslateLoop()
+	if translateConn then
+		return
+	end
+
+	translateConn = RunService.Heartbeat:Connect(function(dt)
 		if not tpwalking then
-			pcall(function()
-				conn:Disconnect()
-			end)
 			return
 		end
 
@@ -1119,7 +1203,7 @@ local function runTranslateThread()
 
 		local md = hum.MoveDirection or Vector3.new(0, 0, 0)
 		if md.Magnitude > 0 then
-			local displacement = md.Unit * moveScale * dt * 60
+			local displacement = md.Unit * speeds * dt * 60
 			pcall(function()
 				if char.PrimaryPart then
 					char:TranslateBy(displacement)
@@ -1132,110 +1216,94 @@ local function runTranslateThread()
 			end)
 		end
 	end)
-
-	table.insert(translateConns, conn)
 end
 
-local function startAscend()
-	if ascendConn then
+local function stopTranslateLoop()
+	if translateConn then
+		pcall(function()
+			translateConn:Disconnect()
+		end)
+		translateConn = nil
+	end
+end
+
+local function startFacingLoop()
+	if rotateConn then
 		return
 	end
 
-	ascendConn = RunService.Heartbeat:Connect(function(dt)
-		local char = getChar()
-		if not char then
+	rotateConn = RunService.Heartbeat:Connect(function()
+		if not nowe or not activeBg then
 			return
 		end
 
-		local disp = Vector3.new(0, ascendSpeed * dt * 60, 0)
-		pcall(function()
-			if char.PrimaryPart then
-				char:TranslateBy(disp)
-			else
-				local hrp = getPrimaryPart(char)
-				if hrp and hrp.Parent then
-					hrp.CFrame = hrp.CFrame + disp
-				end
-			end
-		end)
-	end)
-end
-
-local function stopAscend()
-	if ascendConn then
-		pcall(function()
-			ascendConn:Disconnect()
-		end)
-		ascendConn = nil
-	end
-end
-
-local function startDescend()
-	if descendConn then
-		return
-	end
-
-	descendConn = RunService.Heartbeat:Connect(function(dt)
 		local char = getChar()
-		if not char then
+		local hum = getHumanoid(char)
+		local part = getPrimaryPart(char)
+		if not char or not hum or not part then
 			return
 		end
 
-		local disp = Vector3.new(0, -ascendSpeed * dt * 60, 0)
-		pcall(function()
-			if char.PrimaryPart then
-				char:TranslateBy(disp)
-			else
-				local hrp = getPrimaryPart(char)
-				if hrp and hrp.Parent then
-					hrp.CFrame = hrp.CFrame + disp
-				end
-			end
-		end)
+		local md = hum.MoveDirection
+		local moveFlat = Vector3.new(md.X, 0, md.Z)
+		if moveFlat.Magnitude <= 0.01 then
+			return
+		end
+
+		local target = CFrame.new(part.Position, part.Position + moveFlat.Unit)
+
+		if rotateTween then
+			pcall(function()
+				rotateTween:Cancel()
+			end)
+		end
+
+		rotateTween = TweenService:Create(
+			activeBg,
+			TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{ CFrame = target }
+		)
+		rotateTween:Play()
 	end)
 end
 
-local function stopDescend()
-	if descendConn then
+local function stopFacingLoop()
+	if rotateConn then
 		pcall(function()
-			descendConn:Disconnect()
+			rotateConn:Disconnect()
 		end)
-		descendConn = nil
+		rotateConn = nil
 	end
 end
 
-local function rotateToCamera()
-	if not activeBg then
+local function startAnimationLoop()
+	if animationConn then
 		return
 	end
 
-	local char = getChar()
-	local part = getPrimaryPart(char)
-	local cam = workspace.CurrentCamera
-	if not part or not cam then
-		return
-	end
+	animationConn = RunService.Heartbeat:Connect(function()
+		if not nowe then
+			return
+		end
 
-	local look = cam.CFrame.LookVector
-	local lookFlat = Vector3.new(look.X, 0, look.Z)
-	if lookFlat.Magnitude <= 0 then
-		return
-	end
+		local char = getChar()
+		local hum = getHumanoid(char)
+		if not hum then
+			return
+		end
 
-	local target = CFrame.new(part.Position, part.Position + lookFlat)
+		local moving = hum.MoveDirection.Magnitude > 0.01
+		setFlyAnimation(speeds, moving)
+	end)
+end
 
-	if rotateTween then
+local function stopAnimationLoop()
+	if animationConn then
 		pcall(function()
-			rotateTween:Cancel()
+			animationConn:Disconnect()
 		end)
+		animationConn = nil
 	end
-
-	rotateTween = TweenService:Create(
-		activeBg,
-		TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-		{ CFrame = target }
-	)
-	rotateTween:Play()
 end
 
 local function startFly()
@@ -1257,6 +1325,7 @@ local function startFly()
 	end)
 
 	freezeAnimations(char)
+	loadFlyAnimations(hum)
 
 	local attach = getPrimaryPart(char)
 	if attach then
@@ -1264,17 +1333,12 @@ local function startFly()
 	end
 
 	tpwalking = true
+	startTranslateLoop()
+	startFacingLoop()
+	startAnimationLoop()
 
-	for i = 1, math.max(1, speeds) do
-		task.spawn(runTranslateThread)
-	end
-
-	task.spawn(function()
-		while nowe and activeBg do
-			task.wait(0.06)
-			rotateToCamera()
-		end
-	end)
+	local moving = hum.MoveDirection.Magnitude > 0.01
+	setFlyAnimation(speeds, moving)
 end
 
 local function stopFly()
@@ -1285,15 +1349,9 @@ local function stopFly()
 	nowe = false
 	tpwalking = false
 
-	for _, c in ipairs(translateConns) do
-		pcall(function()
-			c:Disconnect()
-		end)
-	end
-	translateConns = {}
-
-	stopAscend()
-	stopDescend()
+	stopTranslateLoop()
+	stopFacingLoop()
+	stopAnimationLoop()
 
 	local char = getChar()
 	if char then
@@ -1310,6 +1368,7 @@ local function stopFly()
 		unfreezeAnimations(char)
 	end
 
+	stopFlyAnimations()
 	destroyBodies()
 end
 
@@ -1332,27 +1391,19 @@ end)
 
 speedBox.FocusLost:Connect(function()
 	local n = tonumber(speedBox.Text)
-	if not n or n < 1 then
+	if not n or n <= 0 then
 		speedBox.Text = tostring(speeds)
 		return
 	end
 
-	speeds = math.max(1, math.floor(n))
+	speeds = n
 	speedBox.Text = tostring(speeds)
 
 	if nowe then
-		tpwalking = false
-
-		for _, c in ipairs(translateConns) do
-			pcall(function()
-				c:Disconnect()
-			end)
-		end
-		translateConns = {}
-
-		tpwalking = true
-		for i = 1, math.max(1, speeds) do
-			task.spawn(runTranslateThread)
+		local char = getChar()
+		local hum = getHumanoid(char)
+		if hum then
+			setFlyAnimation(speeds, hum.MoveDirection.Magnitude > 0.01)
 		end
 	end
 end)
