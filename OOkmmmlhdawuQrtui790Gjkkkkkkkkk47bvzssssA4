@@ -5024,7 +5024,7 @@ local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local SPEED = 1000
 
-local spinSpeed = 10
+local spinSpeed = 20
 
 if playerGui:FindFirstChild("KitaimoraRingGuiShape") then
 
