@@ -11239,7 +11239,7 @@ local function startBom2devGUI()
 	title.Size = UDim2.new(1, -220, 0, 22)
 	title.Position = UDim2.new(0, 54, 0, 7)
 	title.BackgroundTransparency = 1
-	title.Text = "Bom2dev Hub V9.91"
+	title.Text = "Bom2dev Hub"
 	title.Font = Enum.Font.GothamBlack
 	title.TextSize = 17
 	title.TextColor3 = Color3.fromRGB(255, 255, 255)
