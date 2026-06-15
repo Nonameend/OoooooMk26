@@ -11094,7 +11094,7 @@ function changeLanguage(lang)
 	currentLanguage = lang or currentLanguage
 	saveLang({ lang = currentLanguage })
 	if searchBoxRef then
-		searchBoxRef.PlaceholderText = (currentLanguage == "vn") and "Tìm..." or "Search..."
+		searchBoxRef.PlaceholderText = (currentLanguage == "vn") and "Tìm Script" or "Search Script"
 	end
 	regenerateAllScripts()
 	buildFuncButtons()
@@ -11239,7 +11239,7 @@ local function startBom2devGUI()
 	title.Size = UDim2.new(1, -220, 0, 22)
 	title.Position = UDim2.new(0, 54, 0, 7)
 	title.BackgroundTransparency = 1
-	title.Text = "Bom2dev Hub V9.81"
+	title.Text = "Bom2dev Hub V9.91"
 	title.Font = Enum.Font.GothamBlack
 	title.TextSize = 17
 	title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -11257,7 +11257,7 @@ local function startBom2devGUI()
 	subtitle.Size = UDim2.new(1, -250, 0, 14)
 	subtitle.Position = UDim2.new(0, 54, 0, 27)
 	subtitle.BackgroundTransparency = 1
-	subtitle.Text = (currentLanguage == "vn") and "Script tạo bởi Bom2dev" or "Script created by Bom2dev"
+	subtitle.Text = (currentLanguage == "vn") and "SCRIPT BOM2DEV" or "SCRIPT BOM2DEV"
 	subtitle.Font = Enum.Font.Gotham
 	subtitle.TextSize = 9
 	subtitle.TextColor3 = Color3.fromRGB(220, 220, 220)
