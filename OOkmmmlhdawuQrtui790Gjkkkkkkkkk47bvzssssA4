@@ -3493,6 +3493,177 @@ else
 	end
 end
 ]]},
+{Text = {vn = "Trạng Thái Humanoid", en = "Humanoid State"}, Script = [[
+
+local Players = game.Players
+local RunService = game.RunService
+local player = Players.LocalPlayer
+
+local old = game.CoreGui:FindFirstChild("HumanoidInfoGui")
+if old then
+	old:Destroy()
+	return
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "HumanoidInfoGui"
+gui.ResetOnSpawn = false
+gui.Parent = game.CoreGui
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 230, 0, 350)
+main.Position = UDim2.new(0, 510, 0.5, -210)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.BackgroundTransparency = 0.3
+main.BorderSizePixel = 0
+main.Parent = gui
+
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0, 350, 0, 350)
+label.Position = UDim2.new(0, 0, 0, 0)
+label.BackgroundTransparency = 1
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.Font = Enum.Font.Code
+label.TextSize = 11.8
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.TextYAlignment = Enum.TextYAlignment.Top
+label.RichText = false
+label.TextWrapped = false
+label.Text = "Đang tải..."
+label.Parent = main
+
+local pad = Instance.new("UIPadding")
+pad.PaddingLeft = UDim.new(0, 2)
+pad.PaddingTop = UDim.new(0, 2)
+pad.Parent = label
+
+local function v(x)
+	if typeof(x) == "Vector3" then
+		return string.format("(%.2f, %.2f, %.2f)", x.X, x.Y, x.Z)
+	elseif typeof(x) == "Vector2" then
+		return string.format("(%.2f, %.2f)", x.X, x.Y)
+	elseif typeof(x) == "CFrame" then
+		local p = x.Position
+		return string.format("CFrame(%.2f, %.2f, %.2f)", p.X, p.Y, p.Z)
+	elseif typeof(x) == "EnumItem" then
+		return x.Name
+	else
+		return tostring(x)
+	end
+end
+
+local function getSafe(obj, prop)
+	local ok, val = pcall(function()
+		return obj[prop]
+	end)
+	if ok then
+		return val
+	end
+	return "N/A"
+end
+
+local conn
+local charConn
+
+local function setup(char)
+	local hum = char:WaitForChild("Humanoid")
+
+	if conn then
+		conn:Disconnect()
+		conn = nil
+	end
+
+	conn = RunService.RenderStepped:Connect(function()
+		if not hum.Parent then
+			return
+		end
+
+		local lines = {
+			"ClassName = " .. v(getSafe(hum, "ClassName")),
+			"Name = " .. v(getSafe(hum, "Name")),
+			"RigType = " .. v(getSafe(hum, "RigType")),
+			"Health = " .. v(getSafe(hum, "Health")),
+			"MaxHealth = " .. v(getSafe(hum, "MaxHealth")),
+			"WalkSpeed = " .. v(getSafe(hum, "WalkSpeed")),
+			"JumpPower = " .. v(getSafe(hum, "JumpPower")),
+			"JumpHeight = " .. v(getSafe(hum, "JumpHeight")),
+			"UseJumpPower = " .. v(getSafe(hum, "UseJumpPower")),
+			"Jump = " .. v(getSafe(hum, "Jump")),
+			"Sit = " .. v(getSafe(hum, "Sit")),
+			"AutoRotate = " .. v(getSafe(hum, "AutoRotate")),
+			"AutoJumpEnabled = " .. v(getSafe(hum, "AutoJumpEnabled")),
+			"HealthDisplayType = " .. v(getSafe(hum, "HealthDisplayType")),
+			"DisplayDistanceType = " .. v(getSafe(hum, "DisplayDistanceType")),
+			"FloorMaterial = " .. v(getSafe(hum, "FloorMaterial")),
+			"MoveDirection = " .. v(getSafe(hum, "MoveDirection")),
+			"MoveToPoint = " .. v(getSafe(hum, "MoveToPoint")),
+			"RootPart = " .. v((hum.RootPart and hum.RootPart.Name) or "N/A"),
+			"TargetPoint = " .. v(getSafe(hum, "TargetPoint")),
+			"PlatformStand = " .. v(getSafe(hum, "PlatformStand")),
+			"CameraOffset = " .. v(getSafe(hum, "CameraOffset")),
+			"FloorMaterial = " .. v(getSafe(hum, "FloorMaterial")),
+			"State = " .. v(getSafe(hum, "GetState") and hum:GetState() or "N/A"),
+			"CurrentState = " .. v(getSafe(hum, "GetState") and hum:GetState().Name or "N/A"),
+			"StateEnabled Running = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Running) end)),
+			"StateEnabled Jumping = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Jumping) end)),
+			"StateEnabled Freefall = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Freefall) end)),
+			"StateEnabled Swimming = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Swimming) end)),
+			"StateEnabled Seated = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Seated) end)),
+			"StateEnabled Climbing = " .. v(pcall(function() return hum:GetStateEnabled(Enum.HumanoidStateType.Climbing) end)),
+		}
+
+		local okState, stateName = pcall(function()
+			return hum:GetState().Name
+		end)
+		if okState then
+			lines[23] = "State = " .. stateName
+		else
+			lines[23] = "State = N/A"
+		end
+
+		local okRunning, running = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Running)
+		end)
+		lines[24] = "StateEnabled Running = " .. tostring(okRunning and running or "N/A")
+
+		local okJumping, jumping = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Jumping)
+		end)
+		lines[25] = "StateEnabled Jumping = " .. tostring(okJumping and jumping or "N/A")
+
+		local okFreefall, freefall = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Freefall)
+		end)
+		lines[26] = "StateEnabled Freefall = " .. tostring(okFreefall and freefall or "N/A")
+
+		local okSwimming, swimming = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Swimming)
+		end)
+		lines[27] = "StateEnabled Swimming = " .. tostring(okSwimming and swimming or "N/A")
+
+		local okSeated, seated = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Seated)
+		end)
+		lines[28] = "StateEnabled Seated = " .. tostring(okSeated and seated or "N/A")
+
+		local okClimbing, climbing = pcall(function()
+			return hum:GetStateEnabled(Enum.HumanoidStateType.Climbing)
+		end)
+		lines[29] = "StateEnabled Climbing = " .. tostring(okClimbing and climbing or "N/A")
+
+		label.Text = table.concat(lines, "\n")
+	end)
+end
+
+if player.Character then
+	setup(player.Character)
+end
+
+charConn = player.CharacterAdded:Connect(setup)
+
+]]},
 }},
 
 {Text = {vn = "Bầu Trời", en = "Sky"}, Scripts = {
@@ -10634,7 +10805,7 @@ local function startBom2devGUI()
 	Instance.new("UICorner", header).CornerRadius = UDim.new(0, 14)
 
 	local title = Instance.new("TextLabel", header)
-	title.Text = "Bom2dev Hub V9.75"
+	title.Text = "Bom2dev Hub V9.8"
 	title.Font = Enum.Font.GothamBold
 	title.TextScaled = true
 	title.TextColor3 = Color3.fromRGB(255, 0, 0)
