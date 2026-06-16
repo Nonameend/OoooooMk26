@@ -10927,7 +10927,7 @@ local function layoutFlowButtons(buttons)
 		title.Position = UDim2.new(0, 18, 0, 0)
 		title.Text = labelText
 		title.Font = Enum.Font.GothamSemibold
-		title.TextSize = 14
+		title.TextSize = 12
 		title.TextColor3 = Color3.fromRGB(255, 245, 245)
 		title.TextXAlignment = Enum.TextXAlignment.Left
 		title.TextTruncate = Enum.TextTruncate.None
