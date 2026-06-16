@@ -10921,22 +10921,13 @@ local function layoutFlowButtons(buttons)
 			NumberSequenceKeypoint.new(1, 0.04)
 		})
 
-		local bar = Instance.new("Frame")
-		bar.Name = "Bar"
-		bar.Size = UDim2.new(0, 4, 1, -12)
-		bar.Position = UDim2.new(0, 7, 0, 6)
-		bar.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-		bar.BorderSizePixel = 0
-		bar.Parent = btn
-		round(bar, UDim.new(1, 0))
-
 		local title = Instance.new("TextLabel")
 		title.BackgroundTransparency = 1
 		title.Size = UDim2.new(1, -18, 1, 0)
 		title.Position = UDim2.new(0, 18, 0, 0)
 		title.Text = labelText
 		title.Font = Enum.Font.GothamSemibold
-		title.TextScaled = true
+		title.TextSize = 14
 		title.TextColor3 = Color3.fromRGB(255, 245, 245)
 		title.TextXAlignment = Enum.TextXAlignment.Left
 		title.TextTruncate = Enum.TextTruncate.None
@@ -10951,9 +10942,6 @@ local function layoutFlowButtons(buttons)
 				Transparency = 0.14,
 				Color = Color3.fromRGB(255, 185, 185)
 			}):Play()
-			TweenService:Create(bar, TweenInfo.new(0.14), {
-				BackgroundColor3 = Color3.fromRGB(255, 115, 115)
-			}):Play()
 		end)
 
 		btn.MouseLeave:Connect(function()
@@ -10963,9 +10951,6 @@ local function layoutFlowButtons(buttons)
 			TweenService:Create(btnStroke, TweenInfo.new(0.16), {
 				Transparency = 0.76,
 				Color = Color3.fromRGB(255, 110, 110)
-			}):Play()
-			TweenService:Create(bar, TweenInfo.new(0.16), {
-				BackgroundColor3 = Color3.fromRGB(120, 18, 18)
 			}):Play()
 		end)
 
@@ -11038,22 +11023,13 @@ local function buildFuncButtons()
 			NumberSequenceKeypoint.new(1, 0.04)
 		})
 
-		local bar = Instance.new("Frame")
-		bar.Name = "Bar"
-		bar.Size = UDim2.new(0, 4, 1, -12)
-		bar.Position = UDim2.new(0, 7, 0, 6)
-		bar.BackgroundColor3 = Color3.fromRGB(120, 18, 18)
-		bar.BorderSizePixel = 0
-		bar.Parent = btn
-		round(bar, UDim.new(1, 0))
-
 		local txt = Instance.new("TextLabel")
 		txt.BackgroundTransparency = 1
 		txt.Size = UDim2.new(1, -18, 1, 0)
 		txt.Position = UDim2.new(0, 18, 0, 0)
 		txt.Text = getText(f.Text)
 		txt.Font = Enum.Font.GothamBold
-		txt.TextSize = 12
+		txt.TextScaled = true
 		txt.TextColor3 = Color3.fromRGB(255, 245, 245)
 		txt.TextXAlignment = Enum.TextXAlignment.Left
 		txt.TextTruncate = Enum.TextTruncate.None
