@@ -10936,10 +10936,10 @@ local function layoutFlowButtons(buttons)
 		title.Position = UDim2.new(0, 18, 0, 0)
 		title.Text = labelText
 		title.Font = Enum.Font.GothamSemibold
-		title.TextSize = 12
+		title.TextScaled = true
 		title.TextColor3 = Color3.fromRGB(255, 245, 245)
 		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.TextTruncate = Enum.TextTruncate.AtEnd
+		title.TextTruncate = Enum.TextTruncate.None
 		title.Parent = btn
 		styleMetalText(title, false)
 
@@ -11056,7 +11056,7 @@ local function buildFuncButtons()
 		txt.TextSize = 12
 		txt.TextColor3 = Color3.fromRGB(255, 245, 245)
 		txt.TextXAlignment = Enum.TextXAlignment.Left
-		txt.TextTruncate = Enum.TextTruncate.AtEnd
+		txt.TextTruncate = Enum.TextTruncate.None
 		txt.Parent = btn
 		styleMetalText(txt, false)
 
