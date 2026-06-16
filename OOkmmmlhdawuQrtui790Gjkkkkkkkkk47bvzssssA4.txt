@@ -10890,7 +10890,7 @@ local function layoutFlowButtons(buttons)
 
 	for i, v in ipairs(buttons) do
 		local labelText = getText(v.Text)
-		local bounds = TextService:GetTextSize(labelText, 13, Enum.Font.GothamSemibold, Vector2.new(1000, 24))
+		local bounds = TextService:GetTextSize(labelText, 15, Enum.Font.GothamSemibold, Vector2.new(1000, 24))
 		local btnW = math.clamp(math.floor(bounds.X + 32), 82, 156)
 		if x + btnW > areaW then
 			x = startX
@@ -10920,6 +10920,15 @@ local function layoutFlowButtons(buttons)
 			NumberSequenceKeypoint.new(0, 0.08),
 			NumberSequenceKeypoint.new(1, 0.04)
 		})
+
+local bar = Instance.new("Frame")
+bar.Name = "Bar"
+bar.Size = UDim2.new(0, 4, 1, -12)
+bar.Position = UDim2.new(0, 7, 0, 6)
+bar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+bar.BorderSizePixel = 0
+bar.Parent = btn
+round(bar, UDim.new(1, 0))
 
 		local title = Instance.new("TextLabel")
 		title.BackgroundTransparency = 1
@@ -10969,7 +10978,7 @@ local function layoutFlowButtons(buttons)
 		empty.BackgroundTransparency = 1
 		empty.Size = UDim2.new(1, -20, 0, 24)
 		empty.Position = UDim2.new(0, 10, 0, 42)
-		empty.Text = (currentLanguage == "vn") and "Không có script" or "No script"
+		empty.Text = (currentLanguage == "vn") and "Không có script!" or "No script!"
 		empty.Font = Enum.Font.GothamSemibold
 		empty.TextSize = 13
 		empty.TextColor3 = Color3.fromRGB(225, 225, 225)
