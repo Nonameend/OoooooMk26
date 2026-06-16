@@ -10925,7 +10925,7 @@ local function layoutFlowButtons(buttons)
 		bar.Name = "Bar"
 		bar.Size = UDim2.new(0, 4, 1, -12)
 		bar.Position = UDim2.new(0, 7, 0, 6)
-		bar.BackgroundColor3 = Color3.fromRGB(120, 18, 18)
+		bar.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
 		bar.BorderSizePixel = 0
 		bar.Parent = btn
 		round(bar, UDim.new(1, 0))
