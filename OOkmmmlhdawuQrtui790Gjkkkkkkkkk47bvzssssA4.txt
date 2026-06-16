@@ -1,12 +1,22 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local TextService = game:GetService("TextService")
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
+local Players = game.Players
+local TweenService = game.TweenService
+local TextService = game.TextService
+local HttpService = game.HttpService
+local UserInputService = game.UserInputService
+local CoreGui = game.CoreGui
 
 local player = Players.LocalPlayer
+
+local MAIN_W = 430
+local MAIN_H = 276
+
+local ACCENT = Color3.fromRGB(255, 0, 0)
+local ACCENT_DARK = Color3.fromRGB(120, 0, 0)
+local ACCENT_DARKER = Color3.fromRGB(45, 0, 0)
+local PANEL = Color3.fromRGB(16, 16, 18)
+local PANEL_2 = Color3.fromRGB(20, 20, 24)
+local TEXT = Color3.fromRGB(255, 242, 242)
+
 local function safeDestroy(name)
 	local g = CoreGui:FindFirstChild(name)
 	if g then
@@ -17,67 +27,31 @@ end
 safeDestroy("AutoTypingOverlay")
 safeDestroy("Bom2dev")
 
-local SaveFileName = "Bom2devNgonNgu.json"
+local LangFile = "Bom2devNgonNgu.json"
+local ScriptFile = "Bom2devScripts.json"
 
-local function saveLang(tbl)
+local function saveJSON(file, tbl)
 	pcall(function()
 		if writefile then
-			writefile(SaveFileName, HttpService:JSONEncode(tbl))
+			writefile(file, HttpService:JSONEncode(tbl))
 		end
 	end)
 end
 
-local function loadLang()
-	local data = { lang = "vn" }
+local function loadJSON(file, default)
+	local data = default
 	pcall(function()
-		if readfile and isfile and isfile(SaveFileName) then
-			local raw = readfile(SaveFileName)
+		if readfile and isfile and isfile(file) then
+			local raw = readfile(file)
 			local ok, dec = pcall(function()
 				return HttpService:JSONDecode(raw)
 			end)
-			if ok and type(dec) == "table" and dec.lang then
+			if ok and type(dec) == "table" then
 				data = dec
 			end
 		end
 	end)
 	return data
-end
-
-local savedLang = loadLang()
-local currentLanguage = savedLang.lang or "vn"
-
-local function getText(t)
-	if type(t) == "table" then
-		return t[currentLanguage] or t.vn or t.en or ""
-	end
-	return tostring(t or "")
-end
-
-local function runScriptEntry(entry)
-	if type(entry) == "function" then
-		pcall(entry)
-		return
-	end
-	if type(entry) == "string" then
-		if loadstring then
-			local chunk = loadstring(entry)
-			if chunk then
-				local ok, ret = pcall(chunk)
-				if ok and type(ret) == "function" then
-					pcall(ret)
-				end
-				return
-			end
-			local wrapper = loadstring("return function()\n" .. entry .. "\nend")
-			if wrapper then
-				local ok2, f = pcall(wrapper)
-				if ok2 and type(f) == "function" then
-					pcall(f)
-					return
-				end
-			end
-		end
-	end
 end
 
 local function round(obj, radius)
@@ -91,7 +65,7 @@ local function addStroke(obj, thickness, transparency, color)
 	local s = obj:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
 	s.Thickness = thickness or 1
 	s.Transparency = transparency or 0
-	s.Color = color or Color3.fromRGB(255, 120, 120)
+	s.Color = color or ACCENT
 	s.LineJoinMode = Enum.LineJoinMode.Round
 	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	s.Parent = obj
@@ -106,75 +80,71 @@ local function addGradient(obj, colors, rotation)
 	return g
 end
 
+local function styleText(obj)
+	if not obj then
+		return
+	end
+	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+		obj.TextColor3 = TEXT
+		obj.TextTransparency = 0
+		obj.TextStrokeTransparency = 1
+	end
+end
+
+local function styleMetalText(obj, useStroke)
+	if not obj then
+		return
+	end
+	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+		obj.TextColor3 = TEXT
+		obj.TextTransparency = 0
+		obj.TextStrokeTransparency = 1
+		if useStroke then
+			local s = obj:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
+			s.Thickness = 1
+			s.Transparency = 0.25
+			s.Color = Color3.fromRGB(255, 200, 200)
+			s.LineJoinMode = Enum.LineJoinMode.Round
+			s.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+			s.Parent = obj
+		end
+	end
+end
+
+local function applyPanel(obj, radius, strokeTransparency)
+	obj.BorderSizePixel = 0
+	obj.BackgroundColor3 = PANEL
+	obj.BackgroundTransparency = 0.02
+	round(obj, UDim.new(0, radius or 14))
+	addStroke(obj, 1.2, strokeTransparency or 0.2, ACCENT)
+	local g = addGradient(obj, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, ACCENT_DARK),
+		ColorSequenceKeypoint.new(0.25, ACCENT_DARKER),
+		ColorSequenceKeypoint.new(0.55, Color3.fromRGB(28, 28, 32)),
+		ColorSequenceKeypoint.new(0.8, ACCENT_DARKER),
+		ColorSequenceKeypoint.new(1, ACCENT_DARK)
+	}), 0)
+	g.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.08),
+		NumberSequenceKeypoint.new(1, 0.02)
+	})
+end
+
 local function makeShadow(parent, z, transparency)
 	local sh = Instance.new("Frame")
 	sh.Name = "Shadow"
 	sh.ZIndex = z or 1
 	sh.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	sh.BackgroundTransparency = transparency or 0.58
+	sh.BackgroundTransparency = transparency or 0.65
 	sh.BorderSizePixel = 0
 	sh.Parent = parent
 	return sh
 end
 
-local function styleMetalText(obj, bright)
-	if (not obj) or ((not obj:IsA("TextLabel")) and (not obj:IsA("TextButton")) and (not obj:IsA("TextBox"))) then
-		return
-	end
-	obj.TextColor3 = bright and Color3.fromRGB(255, 248, 248) or Color3.fromRGB(248, 220, 220)
-	local grad = obj:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
-	grad.Rotation = 0
-	grad.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(0.22, Color3.fromRGB(255, 185, 185)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 235, 235)),
-		ColorSequenceKeypoint.new(0.78, Color3.fromRGB(235, 155, 155)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-	})
-	grad.Parent = obj
-	return grad
-end
+local savedLang = loadJSON(LangFile, { lang = "vn" })
+local currentLanguage = savedLang.lang or "vn"
 
-local function applyPanel(obj, radius, strokeTransparency)
-	obj.BorderSizePixel = 0
-	obj.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
-	obj.BackgroundTransparency = 0.01
-	round(obj, UDim.new(0, radius or 14))
-	local st = addStroke(obj, 1.4, strokeTransparency or 0.2, Color3.fromRGB(255, 122, 122))
-	local grad = addGradient(obj, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 10, 10)),
-		ColorSequenceKeypoint.new(0.2, Color3.fromRGB(40, 10, 10)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
-		ColorSequenceKeypoint.new(0.8, Color3.fromRGB(55, 12, 12)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(108, 18, 18))
-	}), 0)
-	grad.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.08),
-		NumberSequenceKeypoint.new(1, 0.02)
-	})
-
-	local topLight = Instance.new("Frame")
-	topLight.Name = "TopLight"
-	topLight.BackgroundTransparency = 0.86
-	topLight.BackgroundColor3 = Color3.fromRGB(255, 210, 210)
-	topLight.BorderSizePixel = 0
-	topLight.Size = UDim2.new(1, -10, 0, 2)
-	topLight.Position = UDim2.new(0, 5, 0, 4)
-	topLight.Parent = obj
-	round(topLight, UDim.new(1, 0))
-
-	local shine = Instance.new("Frame")
-	shine.Name = "Shine"
-	shine.BackgroundTransparency = 0.92
-	shine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	shine.BorderSizePixel = 0
-	shine.Size = UDim2.new(1, 0, 0, 18)
-	shine.Position = UDim2.new(0, 0, 0, 0)
-	shine.Parent = obj
-	round(shine, UDim.new(0, radius or 14))
-
-	return st
-end
+local customScriptsData = loadJSON(ScriptFile, { scripts = {} })
 
 local functions = {
 {Text = {vn = "Trang Chủ", en = "Home"}, Scripts = {
@@ -10792,32 +10762,67 @@ _G.changeLanguage("vn")
 _G.changeLanguage("en")
 ]]},
 }},
+{Text = { vn = "Tạo Script", en = "Create Script" }, Scripts = {}}
 }
 
-local funcFrameRef = nil
-local searchBoxRef = nil
-local ContentRef = nil
-local titleRef = nil
-local guiRef = nil
-local currentScripts = functions[1] and functions[1].Scripts or {}
-local selectedFuncButton = nil
+local guiRef
+local funcFrameRef
+local ContentRef
+local searchBoxRef
+local titleRef
+local sidebarTitleRef
+local contentTitleRef
+local createWindowTitleRef
+local createNameBoxRef
+local createScriptBoxRef
+local createDoneButtonRef
+local createCancelButtonRef
+local currentScripts = functions[1].Scripts
 local lastQuery = ""
-local allScripts = {}
+local selectedFuncButton
+local currentFuncIndex = 1
+local createOverlay
+local createWindow
+local createNameBox
+local createScriptBox
+local contentLayout
 
-local function regenerateAllScripts()
-	allScripts = {}
-	for _, f in ipairs(functions) do
-		for _, s in ipairs(f.Scripts) do
-			table.insert(allScripts, {
-				Text = s.Text,
-				Script = s.Script,
-				ParentFunc = f.Text
-			})
+local function getText(t)
+	if type(t) == "table" then
+		return t[currentLanguage] or t.vn or t.en or ""
+	end
+	return tostring(t or "")
+end
+
+local function getUiText(vn, en)
+	return (currentLanguage == "vn") and vn or en
+end
+
+local function runScriptEntry(entry)
+	if type(entry) == "function" then
+		pcall(entry)
+		return
+	end
+	if type(entry) == "string" then
+		if loadstring then
+			local chunk = loadstring(entry)
+			if chunk then
+				local ok, ret = pcall(chunk)
+				if ok and type(ret) == "function" then
+					pcall(ret)
+				end
+				return
+			end
+			local wrapper = loadstring("return function()\n" .. entry .. "\nend")
+			if wrapper then
+				local ok2, f = pcall(wrapper)
+				if ok2 and type(f) == "function" then
+					pcall(f)
+				end
+			end
 		end
 	end
 end
-
-regenerateAllScripts()
 
 local function clearChildren(parent)
 	for _, child in ipairs(parent:GetChildren()) do
@@ -10826,6 +10831,20 @@ local function clearChildren(parent)
 		end
 	end
 end
+
+local function rebuildCustomScripts()
+	functions[2].Scripts = {}
+	for _, v in ipairs(customScriptsData.scripts or {}) do
+		if type(v) == "table" and v.Text and v.Script then
+			table.insert(functions[2].Scripts, {
+				Text = v.Text,
+				Script = v.Script
+			})
+		end
+	end
+end
+
+rebuildCustomScripts()
 
 local function applySelectedFunc(btn)
 	selectedFuncButton = btn
@@ -10836,10 +10855,10 @@ local function applySelectedFunc(btn)
 				local bar = child:FindFirstChild("Bar")
 				if st then
 					st.Transparency = 0.82
-					st.Color = Color3.fromRGB(255, 145, 145)
+					st.Color = ACCENT
 				end
 				if bar then
-					bar.BackgroundColor3 = Color3.fromRGB(120, 18, 18)
+					bar.BackgroundColor3 = ACCENT_DARKER
 				end
 			end
 		end
@@ -10848,11 +10867,11 @@ local function applySelectedFunc(btn)
 		local st = btn:FindFirstChildOfClass("UIStroke")
 		local bar = btn:FindFirstChild("Bar")
 		if st then
-			st.Transparency = 0.1
-			st.Color = Color3.fromRGB(255, 230, 230)
+			st.Transparency = 0.12
+			st.Color = TEXT
 		end
 		if bar then
-			bar.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+			bar.BackgroundColor3 = ACCENT
 		end
 	end
 end
@@ -10863,143 +10882,189 @@ local function filterScripts(query)
 	end
 	query = string.lower(query)
 	local out = {}
-	for _, v in ipairs(allScripts) do
+	for _, v in ipairs(currentScripts) do
 		local txt = string.lower(getText(v.Text))
 		if string.find(txt, query, 1, true) then
-			table.insert(out, { Text = v.Text, Script = v.Script })
+			table.insert(out, v)
 		end
 	end
 	return out
+end
+
+local function getChipSize(labelText, fontSize, maxWidth)
+	local bounds = TextService:GetTextSize(labelText, fontSize, Enum.Font.GothamSemibold, Vector2.new(1000, 1000))
+	local width = math.clamp(bounds.X + 46, 92, maxWidth)
+	local wrapped = bounds.X + 46 > maxWidth
+	local height = wrapped and math.clamp(bounds.Y + 18, 30, 48) or 30
+	return width, height, wrapped
 end
 
 local function layoutFlowButtons(buttons)
 	if not ContentRef then
 		return
 	end
+
 	clearChildren(ContentRef)
 
-	local startX = 10
-	local startY = 10
-	local gapX = 8
-	local gapY = 8
-	local rowH = 36
-	local areaW = math.max(240, ContentRef.AbsoluteSize.X - 20)
-	local x = startX
-	local y = startY
-	local count = 0
+	local list = {}
+	if currentFuncIndex == 2 then
+		table.insert(list, {
+			Text = { vn = "+", en = "+" },
+			Script = "__OPEN_CREATE__"
+		})
+	end
 
-	for i, v in ipairs(buttons) do
+	for _, v in ipairs(buttons) do
+		table.insert(list, v)
+	end
+
+	for i, v in ipairs(list) do
 		local labelText = getText(v.Text)
-		local bounds = TextService:GetTextSize(labelText, 15, Enum.Font.GothamSemibold, Vector2.new(1000, 24))
-		local btnW = math.clamp(math.floor(bounds.X + 32), 82, 156)
-		if x + btnW > areaW then
-			x = startX
-			y += rowH + gapY
-		end
+		local maxWidth = math.max(130, ContentRef.AbsoluteSize.X - 24)
+		local btnW, btnH, wrapped = getChipSize(labelText, 13, maxWidth)
 
 		local btn = Instance.new("TextButton")
 		btn.Name = "ScriptButton_" .. i
-		btn.Size = UDim2.new(0, btnW, 0, rowH)
-		btn.Position = UDim2.new(0, x, 0, y)
-		btn.BackgroundColor3 = Color3.fromRGB(23, 23, 28)
+		btn.Size = UDim2.new(0, btnW, 0, btnH)
+		btn.BackgroundColor3 = PANEL_2
 		btn.BackgroundTransparency = 0.02
 		btn.BorderSizePixel = 0
 		btn.Text = ""
 		btn.AutoButtonColor = false
 		btn.Parent = ContentRef
-		round(btn, UDim.new(0, 11))
-		local btnStroke = addStroke(btn, 1, 0.76, Color3.fromRGB(255, 110, 110))
-		local btnGrad = addGradient(btn, ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 14, 14)),
-			ColorSequenceKeypoint.new(0.25, Color3.fromRGB(40, 10, 10)),
-			ColorSequenceKeypoint.new(0.55, Color3.fromRGB(24, 24, 28)),
-			ColorSequenceKeypoint.new(0.85, Color3.fromRGB(64, 14, 14)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(122, 22, 22))
+		round(btn, UDim.new(1, 0))
+		local stroke = addStroke(btn, 1, 0.62, ACCENT)
+		local grad = addGradient(btn, ColorSequence.new({
+			ColorSequenceKeypoint.new(0, ACCENT_DARK),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(24, 24, 28))
 		}), 0)
-		btnGrad.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.08),
-			NumberSequenceKeypoint.new(1, 0.04)
+		grad.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.06),
+			NumberSequenceKeypoint.new(1, 0.02)
 		})
 
-local bar = Instance.new("Frame")
-bar.Name = "Bar"
-bar.Size = UDim2.new(0, 4, 1, -12)
-bar.Position = UDim2.new(0, 7, 0, 6)
-bar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-bar.BorderSizePixel = 0
-bar.Parent = btn
-round(bar, UDim.new(1, 0))
+		if v.Script == "__OPEN_CREATE__" then
+			btn.Text = "+"
+			btn.Font = Enum.Font.GothamBlack
+			btn.TextSize = 18
+			btn.TextXAlignment = Enum.TextXAlignment.Center
+			btn.TextYAlignment = Enum.TextYAlignment.Center
+			styleText(btn)
 
-		local title = Instance.new("TextLabel")
-		title.BackgroundTransparency = 1
-		title.Size = UDim2.new(1, -18, 1, 0)
-		title.Position = UDim2.new(0, 18, 0, 0)
-		title.Text = labelText
-		title.Font = Enum.Font.GothamSemibold
-		title.TextSize = 12
-		title.TextColor3 = Color3.fromRGB(255, 245, 245)
-		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.TextTruncate = Enum.TextTruncate.None
-		title.Parent = btn
-		styleMetalText(title, false)
+			btn.Activated:Connect(function()
+				if createOverlay and createWindow then
+					createOverlay.Visible = true
+					createWindow.Visible = true
+					createWindow.Size = UDim2.new(0, 0, 0, 0)
+					createWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
+					createWindow.BackgroundTransparency = 1
+					TweenService:Create(createWindow, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+						Size = UDim2.new(0, 330, 0, 220),
+						Position = UDim2.new(0.5, -165, 0.5, -110),
+						BackgroundTransparency = 0.03
+					}):Play()
+					createNameBox.Text = ""
+					createScriptBox.Text = ""
+					task.defer(function()
+						createNameBox:CaptureFocus()
+					end)
+				end
+			end)
+		else
+			local dot = Instance.new("Frame")
+			dot.Size = UDim2.new(0, 8, 0, 8)
+			dot.Position = UDim2.new(0, 10, 0.5, -4)
+			dot.BackgroundColor3 = ACCENT
+			dot.BorderSizePixel = 0
+			dot.Parent = btn
+			round(dot, UDim.new(1, 0))
 
-		btn.MouseEnter:Connect(function()
-			TweenService:Create(btn, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				BackgroundColor3 = Color3.fromRGB(35, 17, 17)
-			}):Play()
-			TweenService:Create(btnStroke, TweenInfo.new(0.14), {
-				Transparency = 0.14,
-				Color = Color3.fromRGB(255, 185, 185)
-			}):Play()
-		end)
+			local lbl = Instance.new("TextLabel")
+			lbl.BackgroundTransparency = 1
+			lbl.Position = UDim2.new(0, 24, 0, 0)
+			lbl.Size = UDim2.new(1, -28, 1, 0)
+			lbl.Text = labelText
+			lbl.Font = Enum.Font.GothamSemibold
+			lbl.TextSize = 13
+			lbl.TextXAlignment = Enum.TextXAlignment.Left
+			lbl.TextYAlignment = Enum.TextYAlignment.Center
+			lbl.TextWrapped = wrapped
+			lbl.TextTruncate = Enum.TextTruncate.None
+			lbl.Parent = btn
+			styleText(lbl)
 
-		btn.MouseLeave:Connect(function()
-			TweenService:Create(btn, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				BackgroundColor3 = Color3.fromRGB(23, 23, 28)
-			}):Play()
-			TweenService:Create(btnStroke, TweenInfo.new(0.16), {
-				Transparency = 0.76,
-				Color = Color3.fromRGB(255, 110, 110)
-			}):Play()
-		end)
+			btn.MouseEnter:Connect(function()
+				TweenService:Create(btn, TweenInfo.new(0.14), {
+					BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+				}):Play()
+				TweenService:Create(stroke, TweenInfo.new(0.14), {
+					Transparency = 0.12
+				}):Play()
+			end)
 
-		btn.Activated:Connect(function()
-			if v and v.Script then
+			btn.MouseLeave:Connect(function()
+				TweenService:Create(btn, TweenInfo.new(0.14), {
+					BackgroundColor3 = PANEL_2
+				}):Play()
+				TweenService:Create(stroke, TweenInfo.new(0.14), {
+					Transparency = 0.62
+				}):Play()
+			end)
+
+			btn.Activated:Connect(function()
 				runScriptEntry(v.Script)
-			end
-		end)
-
-		x += btnW + gapX
-		count += 1
+			end)
+		end
 	end
 
-	if count == 0 then
-		local empty = Instance.new("TextLabel")
-		empty.BackgroundTransparency = 1
-		empty.Size = UDim2.new(1, -20, 0, 24)
-		empty.Position = UDim2.new(0, 10, 0, 42)
-		empty.Text = (currentLanguage == "vn") and "Không có script!" or "No script!"
-		empty.Font = Enum.Font.GothamSemibold
-		empty.TextSize = 13
-		empty.TextColor3 = Color3.fromRGB(225, 225, 225)
-		empty.Parent = ContentRef
-		styleMetalText(empty, false)
-	end
+	task.defer(function()
+		if contentLayout and ContentRef then
+			ContentRef.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 12)
+		end
+	end)
+end
 
-	ContentRef.CanvasSize = UDim2.new(0, 0, 0, y + rowH + 16)
+local function saveCustomScripts()
+	saveJSON(ScriptFile, customScriptsData)
+end
+
+local function addCustomScript(name, code)
+	if not name or name == "" then
+		return
+	end
+	if not code or code == "" then
+		return
+	end
+	customScriptsData.scripts = customScriptsData.scripts or {}
+	table.insert(customScriptsData.scripts, {
+		Text = { vn = name, en = name },
+		Script = code
+	})
+	saveCustomScripts()
+	rebuildCustomScripts()
+	currentScripts = functions[currentFuncIndex].Scripts
+	if lastQuery ~= "" then
+		layoutFlowButtons(filterScripts(lastQuery))
+	else
+		layoutFlowButtons(currentScripts)
+	end
 end
 
 local function buildFuncButtons()
 	if not funcFrameRef then
 		return
 	end
-	selectedFuncButton = nil
-	clearChildren(funcFrameRef)
 
-	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 8)
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Parent = funcFrameRef
+	selectedFuncButton = nil
+	for _, child in ipairs(funcFrameRef:GetChildren()) do
+		child:Destroy()
+	end
+
+	local funcLayout = Instance.new("UIListLayout")
+	funcLayout.Padding = UDim.new(0, 8)
+	funcLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	funcLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	funcLayout.Parent = funcFrameRef
 
 	local pad = Instance.new("UIPadding")
 	pad.PaddingTop = UDim.new(0, 4)
@@ -11007,101 +11072,281 @@ local function buildFuncButtons()
 	pad.PaddingRight = UDim.new(0, 4)
 	pad.Parent = funcFrameRef
 
-	local firstButton = nil
-
-	for _, f in ipairs(functions) do
+	for index, f in ipairs(functions) do
 		local btn = Instance.new("TextButton")
 		btn.Size = UDim2.new(1, 0, 0, 38)
-		btn.BackgroundColor3 = Color3.fromRGB(23, 23, 28)
+		btn.BackgroundColor3 = PANEL_2
 		btn.BackgroundTransparency = 0.02
 		btn.BorderSizePixel = 0
 		btn.AutoButtonColor = false
 		btn.Text = ""
 		btn.Parent = funcFrameRef
 		round(btn, UDim.new(0, 12))
-		local btnStroke = addStroke(btn, 1, 0.76, Color3.fromRGB(255, 110, 110))
+		local btnStroke = addStroke(btn, 1, 0.76, ACCENT)
 		local btnGrad = addGradient(btn, ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 14, 14)),
-			ColorSequenceKeypoint.new(0.25, Color3.fromRGB(40, 10, 10)),
-			ColorSequenceKeypoint.new(0.55, Color3.fromRGB(24, 24, 28)),
-			ColorSequenceKeypoint.new(0.85, Color3.fromRGB(64, 14, 14)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(122, 22, 22))
+			ColorSequenceKeypoint.new(0, ACCENT_DARK),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(24, 24, 28))
 		}), 0)
 		btnGrad.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0.08),
-			NumberSequenceKeypoint.new(1, 0.04)
+			NumberSequenceKeypoint.new(0, 0.06),
+			NumberSequenceKeypoint.new(1, 0.02)
 		})
+
+		local bar = Instance.new("Frame")
+		bar.Name = "Bar"
+		bar.Size = UDim2.new(0, 4, 1, -12)
+		bar.Position = UDim2.new(0, 7, 0, 6)
+		bar.BackgroundColor3 = ACCENT
+		bar.BorderSizePixel = 0
+		bar.Parent = btn
+		round(bar, UDim.new(1, 0))
 
 		local txt = Instance.new("TextLabel")
 		txt.BackgroundTransparency = 1
-		txt.Size = UDim2.new(1, -18, 1, 0)
+		txt.Size = UDim2.new(1, -20, 1, 0)
 		txt.Position = UDim2.new(0, 18, 0, 0)
 		txt.Text = getText(f.Text)
 		txt.Font = Enum.Font.GothamBold
-		txt.TextScaled = true
-		txt.TextColor3 = Color3.fromRGB(255, 245, 245)
+		txt.TextSize = 13
+		txt.TextColor3 = TEXT
 		txt.TextXAlignment = Enum.TextXAlignment.Left
-		txt.TextTruncate = Enum.TextTruncate.None
 		txt.Parent = btn
-		styleMetalText(txt, false)
+		styleText(txt)
 
 		btn.MouseEnter:Connect(function()
-			TweenService:Create(btn, TweenInfo.new(0.14), { BackgroundColor3 = Color3.fromRGB(35, 17, 17) }):Play()
+			TweenService:Create(btn, TweenInfo.new(0.14), { BackgroundColor3 = Color3.fromRGB(40, 0, 0) }):Play()
 			TweenService:Create(btnStroke, TweenInfo.new(0.14), { Transparency = 0.14 }):Play()
 		end)
 
 		btn.MouseLeave:Connect(function()
-			TweenService:Create(btn, TweenInfo.new(0.16), { BackgroundColor3 = Color3.fromRGB(23, 23, 28) }):Play()
-			TweenService:Create(btnStroke, TweenInfo.new(0.16), { Transparency = 0.76 }):Play()
+			TweenService:Create(btn, TweenInfo.new(0.14), { BackgroundColor3 = PANEL_2 }):Play()
+			TweenService:Create(btnStroke, TweenInfo.new(0.14), { Transparency = 0.76 }):Play()
 		end)
 
 		btn.Activated:Connect(function()
 			if searchBoxRef then
 				searchBoxRef.Text = ""
 			end
+			currentFuncIndex = index
 			currentScripts = f.Scripts or {}
-			createButtons(currentScripts)
+			layoutFlowButtons(currentScripts)
 			applySelectedFunc(btn)
 		end)
 
-		if not firstButton then
-			firstButton = btn
+		if index == 1 then
+			currentFuncIndex = 1
+			currentScripts = f.Scripts or {}
+			applySelectedFunc(btn)
 		end
 	end
 
-	funcFrameRef.CanvasSize = UDim2.new(0, 0, 0, 10 + (#functions * 46))
-	if firstButton then
-		applySelectedFunc(firstButton)
-	end
+	task.defer(function()
+		funcFrameRef.CanvasSize = UDim2.new(0, 0, 0, funcLayout.AbsoluteContentSize.Y + 10)
+	end)
 end
 
-function changeLanguage(lang)
-	currentLanguage = lang or currentLanguage
-	saveLang({ lang = currentLanguage })
-	if searchBoxRef then
-		searchBoxRef.PlaceholderText = (currentLanguage == "vn") and "Tìm Script" or "Search Script"
-	end
-	regenerateAllScripts()
-	buildFuncButtons()
-	if lastQuery ~= "" then
-		createButtons(filterScripts(lastQuery))
-	else
-		createButtons(currentScripts)
-	end
-end
-
-_G.changeLanguage = changeLanguage
-
-function createButtons(scripts)
-	if not ContentRef then
-		return
-	end
-	currentScripts = scripts or currentScripts
+local function refreshSearch()
 	if lastQuery ~= "" then
 		layoutFlowButtons(filterScripts(lastQuery))
 	else
 		layoutFlowButtons(currentScripts)
 	end
+end
+
+local function refreshLanguageLabels()
+	if titleRef then
+		titleRef.Text = getUiText("Bom2dev Hub", "Bom2dev Hub")
+	end
+	if sidebarTitleRef then
+		sidebarTitleRef.Text = getUiText("Mục Lục", "Index")
+	end
+	if contentTitleRef then
+		contentTitleRef.Text = getUiText("Danh sách script", "Script List")
+	end
+	if createWindowTitleRef then
+		createWindowTitleRef.Text = getUiText("Tạo Script", "Create Script")
+	end
+	if createNameBoxRef then
+		createNameBoxRef.PlaceholderText = getUiText("Tên script", "Script name")
+	end
+	if createScriptBoxRef then
+		createScriptBoxRef.PlaceholderText = getUiText("Viết script ở đây", "Write script here")
+	end
+	if createDoneButtonRef then
+		createDoneButtonRef.Text = getUiText("Hoàn tất", "Done")
+	end
+	if createCancelButtonRef then
+		createCancelButtonRef.Text = getUiText("Tắt", "Close")
+	end
+end
+
+function changeLanguage(lang)
+	currentLanguage = lang or currentLanguage
+	saveJSON(LangFile, { lang = currentLanguage })
+	if searchBoxRef then
+		searchBoxRef.PlaceholderText = getUiText("Tìm Script", "Search Script")
+	end
+	refreshLanguageLabels()
+	buildFuncButtons()
+	refreshSearch()
+end
+
+_G.changeLanguage = changeLanguage
+
+function createButtons(scripts)
+	currentScripts = scripts or currentScripts
+	refreshSearch()
+end
+
+local function startCreateWindow(parent)
+	createOverlay = Instance.new("Frame")
+	createOverlay.Size = UDim2.new(1, 0, 1, 0)
+	createOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	createOverlay.BackgroundTransparency = 0.42
+	createOverlay.BorderSizePixel = 0
+	createOverlay.Visible = false
+	createOverlay.ZIndex = 100
+	createOverlay.Parent = parent
+
+	createWindow = Instance.new("Frame")
+	createWindow.Size = UDim2.new(0, 330, 0, 220)
+	createWindow.Position = UDim2.new(0.5, -165, 0.5, -110)
+	createWindow.BackgroundColor3 = PANEL
+	createWindow.BackgroundTransparency = 0.03
+	createWindow.BorderSizePixel = 0
+	createWindow.Visible = false
+	createWindow.ZIndex = 101
+	createWindow.Parent = createOverlay
+	applyPanel(createWindow, 16, 0.12)
+	makeShadow(createWindow, 100, 0.75)
+
+	local t = Instance.new("TextLabel")
+	t.Size = UDim2.new(1, -44, 0, 22)
+	t.Position = UDim2.new(0, 14, 0, 12)
+	t.BackgroundTransparency = 1
+	t.Text = getUiText("Tạo Script", "Create Script")
+	t.Font = Enum.Font.GothamBlack
+	t.TextSize = 16
+	t.TextXAlignment = Enum.TextXAlignment.Left
+	t.Parent = createWindow
+	createWindowTitleRef = t
+	styleMetalText(t, true)
+
+	local close = Instance.new("TextButton")
+	close.Size = UDim2.new(0, 26, 0, 26)
+	close.Position = UDim2.new(1, -34, 0, 12)
+	close.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+	close.BorderSizePixel = 0
+	close.Text = "×"
+	close.Font = Enum.Font.GothamBold
+	close.TextSize = 18
+	close.AutoButtonColor = false
+	close.Parent = createWindow
+	round(close, UDim.new(1, 0))
+	addStroke(close, 1, 0.3, ACCENT)
+	styleText(close)
+
+	createNameBox = Instance.new("TextBox")
+	createNameBox.Size = UDim2.new(1, -28, 0, 30)
+	createNameBox.Position = UDim2.new(0, 14, 0, 44)
+	createNameBox.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+	createNameBox.BorderSizePixel = 0
+	createNameBox.PlaceholderText = getUiText("Tên script", "Script name")
+	createNameBox.Text = ""
+	createNameBox.ClearTextOnFocus = false
+	createNameBox.Font = Enum.Font.Gotham
+	createNameBox.TextSize = 13
+	createNameBox.TextXAlignment = Enum.TextXAlignment.Left
+	createNameBox.Parent = createWindow
+	createNameBoxRef = createNameBox
+	round(createNameBox, UDim.new(0, 10))
+	addStroke(createNameBox, 1, 0.45, ACCENT)
+	styleText(createNameBox)
+
+	local pad1 = Instance.new("UIPadding")
+	pad1.PaddingLeft = UDim.new(0, 10)
+	pad1.Parent = createNameBox
+
+	createScriptBox = Instance.new("TextBox")
+	createScriptBox.Size = UDim2.new(1, -28, 0, 88)
+	createScriptBox.Position = UDim2.new(0, 14, 0, 82)
+	createScriptBox.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+	createScriptBox.BorderSizePixel = 0
+	createScriptBox.PlaceholderText = getUiText("Viết script ở đây", "Write script here")
+	createScriptBox.Text = ""
+	createScriptBox.ClearTextOnFocus = false
+	createScriptBox.MultiLine = true
+	createScriptBox.TextWrapped = false
+	createScriptBox.TextYAlignment = Enum.TextYAlignment.Top
+	createScriptBox.Font = Enum.Font.Code
+	createScriptBox.TextSize = 12
+	createScriptBox.TextXAlignment = Enum.TextXAlignment.Left
+	createScriptBox.Parent = createWindow
+	createScriptBoxRef = createScriptBox
+	round(createScriptBox, UDim.new(0, 10))
+	addStroke(createScriptBox, 1, 0.45, ACCENT)
+	styleText(createScriptBox)
+
+	local pad2 = Instance.new("UIPadding")
+	pad2.PaddingLeft = UDim.new(0, 10)
+	pad2.PaddingTop = UDim.new(0, 8)
+	pad2.Parent = createScriptBox
+
+	local done = Instance.new("TextButton")
+	done.Size = UDim2.new(0, 120, 0, 28)
+	done.Position = UDim2.new(1, -134, 1, -38)
+	done.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+	done.BorderSizePixel = 0
+	done.Text = getUiText("Hoàn tất", "Done")
+	done.Font = Enum.Font.GothamBold
+	done.TextSize = 13
+	done.AutoButtonColor = false
+	done.Parent = createWindow
+	createDoneButtonRef = done
+	round(done, UDim.new(0, 10))
+	addStroke(done, 1, 0.2, ACCENT)
+	styleText(done)
+
+	local cancel = Instance.new("TextButton")
+	cancel.Size = UDim2.new(0, 90, 0, 28)
+	cancel.Position = UDim2.new(0, 14, 1, -38)
+	cancel.BackgroundColor3 = Color3.fromRGB(28, 0, 0)
+	cancel.BorderSizePixel = 0
+	cancel.Text = getUiText("Tắt", "Close")
+	cancel.Font = Enum.Font.GothamBold
+	cancel.TextSize = 13
+	cancel.AutoButtonColor = false
+	cancel.Parent = createWindow
+	createCancelButtonRef = cancel
+	round(cancel, UDim.new(0, 10))
+	addStroke(cancel, 1, 0.34, ACCENT)
+	styleText(cancel)
+
+	local function closeCreate()
+		local tw = TweenService:Create(createWindow, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+			Size = UDim2.new(0, 0, 0, 0),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			BackgroundTransparency = 1
+		})
+		tw:Play()
+		tw.Completed:Once(function()
+			createOverlay.Visible = false
+			createWindow.Visible = false
+		end)
+	end
+
+	close.Activated:Connect(closeCreate)
+	cancel.Activated:Connect(closeCreate)
+
+	done.Activated:Connect(function()
+		local name = string.gsub(createNameBox.Text or "", "^%s+", "")
+		name = string.gsub(name, "%s+$", "")
+		local code = createScriptBox.Text or ""
+		if name ~= "" and code ~= "" then
+			addCustomScript(name, code)
+			closeCreate()
+		end
+	end)
 end
 
 local function startBom2devGUI()
@@ -11153,20 +11398,20 @@ local function startBom2devGUI()
 	}), 45)
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(0, 450, 0, 285)
-	frame.Position = UDim2.new(0.5, -225, 0.5, -142)
-	frame.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+	frame.Size = UDim2.new(0, MAIN_W, 0, MAIN_H)
+	frame.Position = UDim2.new(0.5, -(MAIN_W / 2), 0.5, -(MAIN_H / 2))
+	frame.BackgroundColor3 = PANEL
 	frame.BackgroundTransparency = 0.03
 	frame.BorderSizePixel = 0
 	frame.Visible = false
 	frame.ClipsDescendants = true
 	frame.Parent = gui2
-	applyPanel(frame, 18, 0.1)
+	applyPanel(frame, 18, 0.08)
 
 	local frameGlow = Instance.new("Frame")
 	frameGlow.Size = UDim2.new(1, 18, 1, 18)
 	frameGlow.Position = UDim2.new(0, -9, 0, -9)
-	frameGlow.BackgroundColor3 = Color3.fromRGB(255, 92, 92)
+	frameGlow.BackgroundColor3 = ACCENT
 	frameGlow.BackgroundTransparency = 0.92
 	frameGlow.BorderSizePixel = 0
 	frameGlow.ZIndex = frame.ZIndex - 1
@@ -11174,18 +11419,18 @@ local function startBom2devGUI()
 	round(frameGlow, UDim.new(0, 20))
 
 	local header = Instance.new("Frame")
-	header.Size = UDim2.new(1, -16, 0, 52)
+	header.Size = UDim2.new(1, -16, 0, 54)
 	header.Position = UDim2.new(0, 8, 0, 8)
-	header.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+	header.BackgroundColor3 = PANEL_2
 	header.BackgroundTransparency = 0.03
 	header.BorderSizePixel = 0
 	header.Parent = frame
-	applyPanel(header, 14, 0.52)
+	applyPanel(header, 14, 0.5)
 
 	local headerGlow = Instance.new("Frame")
 	headerGlow.Size = UDim2.new(1, 14, 1, 14)
 	headerGlow.Position = UDim2.new(0, -7, 0, -7)
-	headerGlow.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	headerGlow.BackgroundColor3 = ACCENT
 	headerGlow.BackgroundTransparency = 0.93
 	headerGlow.BorderSizePixel = 0
 	headerGlow.ZIndex = header.ZIndex - 1
@@ -11193,67 +11438,59 @@ local function startBom2devGUI()
 	round(headerGlow, UDim.new(0, 16))
 
 	local avatarBack = Instance.new("Frame")
-	avatarBack.Size = UDim2.new(0, 40, 0, 40)
-	avatarBack.Position = UDim2.new(0, 8, 0.5, -20)
-	avatarBack.BackgroundColor3 = Color3.fromRGB(255, 90, 90)
-	avatarBack.BackgroundTransparency = 0.75
+	avatarBack.Size = UDim2.new(0, 38, 0, 38)
+	avatarBack.Position = UDim2.new(0, 8, 0.5, -19)
+	avatarBack.BackgroundColor3 = Color3.fromRGB(70, 0, 0)
+	avatarBack.BackgroundTransparency = 0.68
 	avatarBack.BorderSizePixel = 0
 	avatarBack.Parent = header
 	round(avatarBack, UDim.new(1, 0))
-	addStroke(avatarBack, 1, 0.44, Color3.fromRGB(255, 210, 210))
+	addStroke(avatarBack, 1, 0.45, ACCENT)
 
 	local avatar = Instance.new("ImageLabel")
-	avatar.Size = UDim2.new(0, 36, 0, 36)
-	avatar.Position = UDim2.new(0, 10, 0.5, -18)
+	avatar.Size = UDim2.new(0, 34, 0, 34)
+	avatar.Position = UDim2.new(0, 10, 0.5, -17)
 	avatar.BackgroundTransparency = 0.05
-	avatar.BackgroundColor3 = Color3.fromRGB(255, 125, 125)
+	avatar.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 	avatar.BorderSizePixel = 0
 	avatar.Image = "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=150&h=150"
 	avatar.ScaleType = Enum.ScaleType.Crop
-	avatar.ImageTransparency = 0
-	avatar.ImageColor3 = Color3.fromRGB(255, 255, 255)
 	avatar.Parent = header
 	round(avatar, UDim.new(1, 0))
-	addStroke(avatar, 1, 0.26, Color3.fromRGB(255, 245, 245))
-	addGradient(avatar, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 170)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-	}), 90)
+	addStroke(avatar, 1, 0.25, TEXT)
 
 	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(1, -220, 0, 22)
-	title.Position = UDim2.new(0, 54, 0, 7)
+	title.Size = UDim2.new(1, -210, 0, 20)
+	title.Position = UDim2.new(0, 52, 0, 8)
 	title.BackgroundTransparency = 1
 	title.Text = "Bom2dev Hub"
 	title.Font = Enum.Font.GothamBlack
 	title.TextSize = 17
-	title.TextColor3 = Color3.fromRGB(255, 255, 255)
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = header
 	titleRef = title
-	styleMetalText(title, true)
-	addGradient(title, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 245, 245)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160, 160)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 245, 245))
+	styleMetalText(title, true)  
+	addGradient(title, ColorSequence.new({  
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 245, 245)),  
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160, 160)),  
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 245, 245))  
 	}), 0)
 
 	local subtitle = Instance.new("TextLabel")
-	subtitle.Size = UDim2.new(1, -250, 0, 14)
-	subtitle.Position = UDim2.new(0, 54, 0, 27)
+	subtitle.Size = UDim2.new(1, -210, 0, 14)
+	subtitle.Position = UDim2.new(0, 52, 0, 28)
 	subtitle.BackgroundTransparency = 1
-	subtitle.Text = (currentLanguage == "vn") and "SCRIPT BOM2DEV" or "SCRIPT BOM2DEV"
+	subtitle.Text = "SCRIPT BOM2DEV"
 	subtitle.Font = Enum.Font.Gotham
 	subtitle.TextSize = 9
-	subtitle.TextColor3 = Color3.fromRGB(220, 220, 220)
 	subtitle.TextXAlignment = Enum.TextXAlignment.Left
 	subtitle.Parent = header
-	styleMetalText(subtitle, false)
+	styleText(subtitle)
 
 	searchBoxRef = Instance.new("TextBox")
-	searchBoxRef.Size = UDim2.new(0, 145, 0, 28)
-	searchBoxRef.Position = UDim2.new(1, -188, 0, 12)
-	searchBoxRef.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+	searchBoxRef.Size = UDim2.new(0, 144, 0, 28)
+	searchBoxRef.Position = UDim2.new(1, -186, 0, 13)
+	searchBoxRef.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
 	searchBoxRef.BackgroundTransparency = 0.03
 	searchBoxRef.BorderSizePixel = 0
 	searchBoxRef.PlaceholderText = (currentLanguage == "vn") and "Tìm Script" or "Search Script"
@@ -11261,33 +11498,28 @@ local function startBom2devGUI()
 	searchBoxRef.ClearTextOnFocus = false
 	searchBoxRef.Font = Enum.Font.Gotham
 	searchBoxRef.TextSize = 12
-	searchBoxRef.TextColor3 = Color3.fromRGB(255, 245, 245)
 	searchBoxRef.TextXAlignment = Enum.TextXAlignment.Left
 	searchBoxRef.Parent = header
-	styleMetalText(searchBoxRef, true)
-	round(searchBoxRef, UDim.new(0, 9))
-	addStroke(searchBoxRef, 1, 0.46, Color3.fromRGB(255, 140, 140))
-	addGradient(searchBoxRef, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(38, 8, 8)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-	}), 0)
+	styleText(searchBoxRef)
+	round(searchBoxRef, UDim.new(0, 10))
+	addStroke(searchBoxRef, 1, 0.4, ACCENT)
 	local searchPad = Instance.new("UIPadding")
 	searchPad.PaddingLeft = UDim.new(0, 10)
 	searchPad.Parent = searchBoxRef
 
 	local leftSidebar = Instance.new("Frame")
-	leftSidebar.Size = UDim2.new(0, 112, 1, -66)
-	leftSidebar.Position = UDim2.new(0, 8, 0, 62)
-	leftSidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 27)
-	leftSidebar.BackgroundTransparency = 0.05
+	leftSidebar.Size = UDim2.new(0, 110, 1, -74)
+	leftSidebar.Position = UDim2.new(0, 8, 0, 68)
+	leftSidebar.BackgroundColor3 = PANEL_2
+	leftSidebar.BackgroundTransparency = 0.04
 	leftSidebar.BorderSizePixel = 0
 	leftSidebar.Parent = frame
-	applyPanel(leftSidebar, 14, 0.78)
+	applyPanel(leftSidebar, 14, 0.74)
 
 	local leftGlow = Instance.new("Frame")
 	leftGlow.Size = UDim2.new(1, 14, 1, 14)
 	leftGlow.Position = UDim2.new(0, -7, 0, -7)
-	leftGlow.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	leftGlow.BackgroundColor3 = ACCENT
 	leftGlow.BackgroundTransparency = 0.94
 	leftGlow.BorderSizePixel = 0
 	leftGlow.ZIndex = leftSidebar.ZIndex - 1
@@ -11298,90 +11530,115 @@ local function startBom2devGUI()
 	sidebarTitle.Size = UDim2.new(1, -12, 0, 18)
 	sidebarTitle.Position = UDim2.new(0, 6, 0, 8)
 	sidebarTitle.BackgroundTransparency = 1
-	sidebarTitle.Text = (currentLanguage == "vn") and "Mục Lục" or "Index"
+	sidebarTitle.Text = getUiText("Mục Lục", "Index")
 	sidebarTitle.Font = Enum.Font.GothamBold
 	sidebarTitle.TextSize = 11
-	sidebarTitle.TextColor3 = Color3.fromRGB(255, 235, 235)
 	sidebarTitle.TextXAlignment = Enum.TextXAlignment.Left
 	sidebarTitle.Parent = leftSidebar
-	styleMetalText(sidebarTitle, true)
+	sidebarTitleRef = sidebarTitle
+	styleText(sidebarTitle)
 
 	local line = Instance.new("Frame")
 	line.Size = UDim2.new(1, -12, 0, 1)
 	line.Position = UDim2.new(0, 6, 0, 28)
-	line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	line.BackgroundTransparency = 0.88
+	line.BackgroundColor3 = ACCENT
+	line.BackgroundTransparency = 0.72
 	line.BorderSizePixel = 0
 	line.Parent = leftSidebar
 
 	funcFrameRef = Instance.new("ScrollingFrame")
-	funcFrameRef.Size = UDim2.new(1, -12, 1, -40)
-	funcFrameRef.Position = UDim2.new(0, 6, 0, 34)
+	funcFrameRef.Size = UDim2.new(1, -10, 1, -40)
+	funcFrameRef.Position = UDim2.new(0, 5, 0, 34)
 	funcFrameRef.BackgroundTransparency = 1
 	funcFrameRef.BorderSizePixel = 0
 	funcFrameRef.ScrollBarThickness = 4
-	funcFrameRef.ScrollBarImageColor3 = Color3.fromRGB(255, 105, 105)
+	funcFrameRef.ScrollBarImageColor3 = ACCENT
 	funcFrameRef.CanvasSize = UDim2.new(0, 0, 0, 0)
 	funcFrameRef.Parent = leftSidebar
 
-	ContentRef = Instance.new("ScrollingFrame")
-	ContentRef.Size = UDim2.new(1, -136, 1, -66)
-	ContentRef.Position = UDim2.new(0, 128, 0, 62)
-	ContentRef.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-	ContentRef.BackgroundTransparency = 0.08
-	ContentRef.BorderSizePixel = 0
-	ContentRef.ScrollBarThickness = 6
-	ContentRef.ScrollBarImageColor3 = Color3.fromRGB(255, 105, 105)
-	ContentRef.CanvasSize = UDim2.new(0, 0, 0, 0)
-	ContentRef.Parent = frame
-	applyPanel(ContentRef, 14, 0.82)
+	local funcPad = Instance.new("UIPadding")
+	funcPad.PaddingTop = UDim.new(0, 2)
+	funcPad.PaddingBottom = UDim.new(0, 6)
+	funcPad.Parent = funcFrameRef
+
+	local contentPanel = Instance.new("Frame")
+	contentPanel.Size = UDim2.new(1, -132, 1, -74)
+	contentPanel.Position = UDim2.new(0, 126, 0, 68)
+	contentPanel.BackgroundColor3 = PANEL_2
+	contentPanel.BackgroundTransparency = 0.08
+	contentPanel.BorderSizePixel = 0
+	contentPanel.Parent = frame
+	applyPanel(contentPanel, 14, 0.8)
 
 	local contentGlow = Instance.new("Frame")
 	contentGlow.Size = UDim2.new(1, 14, 1, 14)
 	contentGlow.Position = UDim2.new(0, -7, 0, -7)
-	contentGlow.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+	contentGlow.BackgroundColor3 = ACCENT
 	contentGlow.BackgroundTransparency = 0.94
 	contentGlow.BorderSizePixel = 0
-	contentGlow.ZIndex = ContentRef.ZIndex - 1
-	contentGlow.Parent = ContentRef
+	contentGlow.ZIndex = contentPanel.ZIndex - 1
+	contentGlow.Parent = contentPanel
 	round(contentGlow, UDim.new(0, 16))
 
 	local contentTitle = Instance.new("TextLabel")
 	contentTitle.Size = UDim2.new(1, -20, 0, 18)
 	contentTitle.Position = UDim2.new(0, 8, 0, 6)
 	contentTitle.BackgroundTransparency = 1
-	contentTitle.Text = (currentLanguage == "vn") and "Danh sách script" or "Script List"
+	contentTitle.Text = getUiText("Danh sách script", "Script List")
 	contentTitle.Font = Enum.Font.GothamBold
 	contentTitle.TextSize = 11
-	contentTitle.TextColor3 = Color3.fromRGB(255, 240, 240)
 	contentTitle.TextXAlignment = Enum.TextXAlignment.Left
-	contentTitle.Parent = ContentRef
-	styleMetalText(contentTitle, true)
-	addGradient(contentTitle, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 245, 245)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160, 160)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 245, 245))
-	}), 0)
+	contentTitle.Parent = contentPanel
+	contentTitleRef = contentTitle
+	styleText(contentTitle)
+
+	ContentRef = Instance.new("ScrollingFrame")
+	ContentRef.Size = UDim2.new(1, -12, 1, -30)
+	ContentRef.Position = UDim2.new(0, 6, 0, 26)
+	ContentRef.BackgroundTransparency = 1
+	ContentRef.BorderSizePixel = 0
+	ContentRef.ScrollBarThickness = 6
+	ContentRef.ScrollBarImageColor3 = ACCENT
+	ContentRef.CanvasSize = UDim2.new(0, 0, 0, 0)
+	ContentRef.Parent = contentPanel
+
+	contentLayout = Instance.new("UIListLayout")
+	contentLayout.Padding = UDim.new(0, 8)
+	contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	contentLayout.FillDirection = Enum.FillDirection.Horizontal
+	contentLayout.Wraps = true
+	contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	contentLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+	contentLayout.Parent = ContentRef
 
 	local contentPad = Instance.new("UIPadding")
-	contentPad.PaddingTop = UDim.new(0, 0)
-	contentPad.PaddingBottom = UDim.new(0, 10)
+	contentPad.PaddingTop = UDim.new(0, 2)
+	contentPad.PaddingBottom = UDim.new(0, 8)
+	contentPad.PaddingLeft = UDim.new(0, 2)
+	contentPad.PaddingRight = UDim.new(0, 2)
 	contentPad.Parent = ContentRef
+
+	contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		ContentRef.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 12)
+	end)
+
+	startCreateWindow(gui2)
+	refreshLanguageLabels()
 
 	local function showFrame()
 		frame.Visible = true
 		frame.Size = UDim2.new(0, 0, 0, 0)
 		frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 		frame.BackgroundTransparency = 1
-		TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-			Size = UDim2.new(0, 450, 0, 285),
-			Position = UDim2.new(0.5, -225, 0.5, -142),
+		TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Size = UDim2.new(0, MAIN_W, 0, MAIN_H),
+			Position = UDim2.new(0.5, -(MAIN_W / 2), 0.5, -(MAIN_H / 2)),
 			BackgroundTransparency = 0.03
 		}):Play()
 	end
 
 	local function hideFrame()
-		local tween = TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		local tween = TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 			Size = UDim2.new(0, 0, 0, 0),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
 			BackgroundTransparency = 1
@@ -11404,19 +11661,17 @@ local function startBom2devGUI()
 
 	toggle.MouseEnter:Connect(function()
 		TweenService:Create(toggleBack, TweenInfo.new(0.16), { BackgroundTransparency = 0.42 }):Play()
-		TweenService:Create(toggle, TweenInfo.new(0.16), { BackgroundColor3 = Color3.fromRGB(255, 120, 120) }):Play()
 		TweenService:Create(toggle, TweenInfo.new(0.16), { Size = UDim2.new(1, -4, 1, -4) }):Play()
 	end)
 
 	toggle.MouseLeave:Connect(function()
 		TweenService:Create(toggleBack, TweenInfo.new(0.16), { BackgroundTransparency = 0.58 }):Play()
-		TweenService:Create(toggle, TweenInfo.new(0.16), { BackgroundColor3 = Color3.fromRGB(255, 88, 88) }):Play()
 		TweenService:Create(toggle, TweenInfo.new(0.16), { Size = UDim2.new(1, -8, 1, -8) }):Play()
 	end)
 
 	local isDragging = false
-	local dragStartPos = nil
-	local startPos = nil
+	local dragStartPos
+	local startPos
 	local CLICK_THRESHOLD = 6
 
 	toggle.InputBegan:Connect(function(input)
@@ -11453,17 +11708,11 @@ local function startBom2devGUI()
 
 	searchBoxRef:GetPropertyChangedSignal("Text"):Connect(function()
 		lastQuery = searchBoxRef.Text or ""
-		if lastQuery == "" then
-			createButtons(currentScripts)
-		else
-			createButtons(filterScripts(lastQuery))
-		end
+		refreshSearch()
 	end)
 
 	ContentRef:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-		if frame.Visible then
-			createButtons(lastQuery == "" and currentScripts or filterScripts(lastQuery))
-		end
+		refreshSearch()
 	end)
 
 	buildFuncButtons()
@@ -11473,32 +11722,28 @@ local function startBom2devGUI()
 	close.Text = "×"
 	close.Font = Enum.Font.GothamBold
 	close.TextSize = 20
-	close.TextColor3 = Color3.fromRGB(255, 220, 220)
-	close.BackgroundColor3 = Color3.fromRGB(38, 14, 14)
+	close.TextColor3 = TEXT
+	close.BackgroundColor3 = Color3.fromRGB(45, 0, 0)
 	close.BackgroundTransparency = 0.03
 	close.Size = UDim2.new(0, 30, 0, 30)
-	close.Position = UDim2.new(1, -38, 0, 11)
+	close.Position = UDim2.new(1, -38, 0, 12)
 	close.Parent = header
-	styleMetalText(close, true)
+	styleText(close)
 	close.AutoButtonColor = false
 	round(close, UDim.new(0, 10))
-	addStroke(close, 1, 0.5, Color3.fromRGB(255, 0, 0))
-	addGradient(close, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(78, 18, 18)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(28, 10, 10))
-	}), 0)
+	addStroke(close, 1, 0.42, ACCENT)
 
 	close.MouseEnter:Connect(function()
-		TweenService:Create(close, TweenInfo.new(0.15), {
+		TweenService:Create(close, TweenInfo.new(0.14), {
 			BackgroundTransparency = 0,
-			TextColor3 = Color3.fromRGB(255, 150, 150)
+			TextColor3 = Color3.fromRGB(255, 170, 170)
 		}):Play()
 	end)
 
 	close.MouseLeave:Connect(function()
-		TweenService:Create(close, TweenInfo.new(0.15), {
+		TweenService:Create(close, TweenInfo.new(0.14), {
 			BackgroundTransparency = 0.03,
-			TextColor3 = Color3.fromRGB(255, 220, 220)
+			TextColor3 = TEXT
 		}):Play()
 	end)
 
@@ -11520,7 +11765,7 @@ local function startBom2devGUI()
 					grad.Rotation = (tick() * 28) % 360
 				end
 			end
-			for _, obj in ipairs({frame, header, leftSidebar, ContentRef, toggleBack}) do
+			for _, obj in ipairs({ frame, header, leftSidebar, contentPanel, toggleBack }) do
 				local g = obj and obj:FindFirstChildOfClass("UIGradient")
 				if g then
 					g.Rotation = (tick() * 20) % 360
