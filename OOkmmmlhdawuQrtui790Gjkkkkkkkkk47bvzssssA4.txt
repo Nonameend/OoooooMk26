@@ -10882,14 +10882,26 @@ local function clearChildren(parent)
 end
 
 local function rebuildCustomScripts()
-	functions[2].Scripts = {}
-	for _, v in ipairs(customScriptsData.scripts or {}) do
-		if type(v) == "table" and v.Text and v.Script then
-			table.insert(functions[2].Scripts, {
-				Text = v.Text,
-				Script = v.Script
-			})
+	local target
+
+	for _, v in ipairs(functions) do
+		if v.IsCreateMenu then
+			target = v
+			break
 		end
+	end
+
+	if not target then
+		return
+	end
+
+	target.Scripts = {}
+
+	for _, v in ipairs(customScriptsData.scripts or {}) do
+		table.insert(target.Scripts, {
+			Text = v.Text,
+			Script = v.Script
+		})
 	end
 end
 
