@@ -84,30 +84,20 @@ local function styleText(obj)
 	if not obj then
 		return
 	end
-	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+	if obj:IsA("TextBox") then
 		obj.TextColor3 = TEXT
-		obj.TextTransparency = 0
-		obj.TextStrokeTransparency = 1
-	end
-end
-
-local function styleMetalText(obj, useStroke)
-	if not obj then
 		return
 	end
-	if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+	if obj:IsA("TextLabel") or obj:IsA("TextButton") then
 		obj.TextColor3 = TEXT
-		obj.TextTransparency = 0
-		obj.TextStrokeTransparency = 1
-		if useStroke then
-			local s = obj:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke")
-			s.Thickness = 1
-			s.Transparency = 0.25
-			s.Color = Color3.fromRGB(255, 200, 200)
-			s.LineJoinMode = Enum.LineJoinMode.Round
-			s.ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
-			s.Parent = obj
-		end
+		local g = obj:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+		g.Rotation = 0
+		g.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+		})
+		g.Parent = obj
 	end
 end
 
@@ -146,7 +136,7 @@ local currentLanguage = savedLang.lang or "vn"
 
 local customScriptsData = loadJSON(ScriptFile, { scripts = {} })
 
-local functions = {
+local functions = {	
 {Text = {vn = "Trang Chủ", en = "Home"}, Scripts = {
 
 {Text = {vn = "God Mode", en = "God Mode"}, Script = [[
@@ -10762,7 +10752,11 @@ _G.changeLanguage("vn")
 _G.changeLanguage("en")
 ]]},
 }},
-{Text = { vn = "Tạo Script", en = "Create Script" }, Scripts = {}}
+{
+		Text = { vn = "Tạo Script", en = "Create Script" },
+		IsCreateMenu = true,
+		Scripts = {}
+	}
 }
 
 local guiRef
@@ -10772,11 +10766,10 @@ local searchBoxRef
 local titleRef
 local sidebarTitleRef
 local contentTitleRef
-local createWindowTitleRef
-local createNameBoxRef
-local createScriptBoxRef
-local createDoneButtonRef
-local createCancelButtonRef
+local createTitleRef
+local createCloseRef
+local createDoneRef
+local createCancelRef
 local currentScripts = functions[1].Scripts
 local lastQuery = ""
 local selectedFuncButton
@@ -10794,8 +10787,64 @@ local function getText(t)
 	return tostring(t or "")
 end
 
-local function getUiText(vn, en)
-	return (currentLanguage == "vn") and vn or en
+local function openCreateWindow()
+	if not createOverlay or not createWindow then
+		return
+	end
+	createOverlay.Visible = true
+	createWindow.Visible = true
+	createWindow.Size = UDim2.new(0, 0, 0, 0)
+	createWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
+	createWindow.BackgroundTransparency = 1
+	TweenService:Create(createWindow, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, 330, 0, 220),
+		Position = UDim2.new(0.5, -165, 0.5, -110),
+		BackgroundTransparency = 0.03
+	}):Play()
+	if createNameBox then
+		createNameBox.Text = ""
+		task.defer(function()
+			pcall(function()
+				createNameBox:CaptureFocus()
+			end)
+		end)
+	end
+	if createScriptBox then
+		createScriptBox.Text = ""
+	end
+end
+
+local function syncUIText()
+	if searchBoxRef then
+		searchBoxRef.PlaceholderText = (currentLanguage == "vn") and "Tìm Script" or "Search Script"
+	end
+	if sidebarTitleRef then
+		sidebarTitleRef.Text = (currentLanguage == "vn") and "Mục Lục" or "Index"
+	end
+	if contentTitleRef then
+		contentTitleRef.Text = (currentLanguage == "vn") and "Danh sách script" or "Script List"
+	end
+	if titleRef then
+		titleRef.Text = "Bom2dev Hub"
+	end
+	if createTitleRef then
+		createTitleRef.Text = (currentLanguage == "vn") and "Tạo Script" or "Create Script"
+	end
+	if createNameBox then
+		createNameBox.PlaceholderText = (currentLanguage == "vn") and "Tên script" or "Script name"
+	end
+	if createScriptBox then
+		createScriptBox.PlaceholderText = (currentLanguage == "vn") and "Viết script ở đây" or "Write script here"
+	end
+	if createDoneRef then
+		createDoneRef.Text = (currentLanguage == "vn") and "Hoàn tất" or "Done"
+	end
+	if createCancelRef then
+		createCancelRef.Text = (currentLanguage == "vn") and "Tắt" or "Close"
+	end
+	if createCloseRef then
+		createCloseRef.Text = "×"
+	end
 end
 
 local function runScriptEntry(entry)
@@ -10906,13 +10955,13 @@ local function layoutFlowButtons(buttons)
 
 	clearChildren(ContentRef)
 
-	if functions[currentFuncIndex]
-and functions[currentFuncIndex].IsCreateMenu then
-	table.insert(list, {
-		Text = { vn = "+", en = "+" },
-		Script = "__OPEN_CREATE__"
-	})
-end
+	local list = {}
+	if functions[currentFuncIndex] and functions[currentFuncIndex].IsCreateMenu then
+		table.insert(list, {
+			Text = { vn = "+", en = "+" },
+			Script = "__OPEN_CREATE__"
+		})
+	end
 
 	for _, v in ipairs(buttons) do
 		table.insert(list, v)
@@ -10944,31 +10993,20 @@ end
 		})
 
 		if v.Script == "__OPEN_CREATE__" then
-			btn.Text = "+"
-			btn.Font = Enum.Font.GothamBlack
-			btn.TextSize = 18
-			btn.TextXAlignment = Enum.TextXAlignment.Center
-			btn.TextYAlignment = Enum.TextYAlignment.Center
-			styleText(btn)
+			local plus = Instance.new("TextLabel")
+			plus.BackgroundTransparency = 1
+			plus.Size = UDim2.new(1, 0, 1, 0)
+			plus.Text = "+"
+			plus.Font = Enum.Font.GothamBlack
+			plus.TextSize = 18
+			plus.TextColor3 = TEXT
+			plus.TextXAlignment = Enum.TextXAlignment.Center
+			plus.TextYAlignment = Enum.TextYAlignment.Center
+			plus.Parent = btn
+			styleText(plus)
 
 			btn.Activated:Connect(function()
-				if createOverlay and createWindow then
-					createOverlay.Visible = true
-					createWindow.Visible = true
-					createWindow.Size = UDim2.new(0, 0, 0, 0)
-					createWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
-					createWindow.BackgroundTransparency = 1
-					TweenService:Create(createWindow, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-						Size = UDim2.new(0, 330, 0, 220),
-						Position = UDim2.new(0.5, -165, 0.5, -110),
-						BackgroundTransparency = 0.03
-					}):Play()
-					createNameBox.Text = ""
-					createScriptBox.Text = ""
-					task.defer(function()
-						createNameBox:CaptureFocus()
-					end)
-				end
+				openCreateWindow()
 			end)
 		else
 			local dot = Instance.new("Frame")
@@ -11012,7 +11050,11 @@ end
 			end)
 
 			btn.Activated:Connect(function()
-				runScriptEntry(v.Script)
+				if v.Script == "__OPEN_CREATE__" then
+					openCreateWindow()
+				else
+					runScriptEntry(v.Script)
+				end
 			end)
 		end
 	end
@@ -11056,9 +11098,7 @@ local function buildFuncButtons()
 	end
 
 	selectedFuncButton = nil
-	for _, child in ipairs(funcFrameRef:GetChildren()) do
-		child:Destroy()
-	end
+	clearChildren(funcFrameRef)
 
 	local funcLayout = Instance.new("UIListLayout")
 	funcLayout.Padding = UDim.new(0, 8)
@@ -11153,40 +11193,10 @@ local function refreshSearch()
 	end
 end
 
-local function refreshLanguageLabels()
-	if titleRef then
-		titleRef.Text = getUiText("Bom2dev Hub", "Bom2dev Hub")
-	end
-	if sidebarTitleRef then
-		sidebarTitleRef.Text = getUiText("Mục Lục", "Index")
-	end
-	if contentTitleRef then
-		contentTitleRef.Text = getUiText("Danh sách script", "Script List")
-	end
-	if createWindowTitleRef then
-		createWindowTitleRef.Text = getUiText("Tạo Script", "Create Script")
-	end
-	if createNameBoxRef then
-		createNameBoxRef.PlaceholderText = getUiText("Tên script", "Script name")
-	end
-	if createScriptBoxRef then
-		createScriptBoxRef.PlaceholderText = getUiText("Viết script ở đây", "Write script here")
-	end
-	if createDoneButtonRef then
-		createDoneButtonRef.Text = getUiText("Hoàn tất", "Done")
-	end
-	if createCancelButtonRef then
-		createCancelButtonRef.Text = getUiText("Tắt", "Close")
-	end
-end
-
 function changeLanguage(lang)
 	currentLanguage = lang or currentLanguage
 	saveJSON(LangFile, { lang = currentLanguage })
-	if searchBoxRef then
-		searchBoxRef.PlaceholderText = getUiText("Tìm Script", "Search Script")
-	end
-	refreshLanguageLabels()
+	syncUIText()
 	buildFuncButtons()
 	refreshSearch()
 end
@@ -11224,24 +11234,23 @@ local function startCreateWindow(parent)
 	t.Size = UDim2.new(1, -44, 0, 22)
 	t.Position = UDim2.new(0, 14, 0, 12)
 	t.BackgroundTransparency = 1
-	t.Text = getUiText("Tạo Script", "Create Script")
 	t.Font = Enum.Font.GothamBlack
 	t.TextSize = 16
 	t.TextXAlignment = Enum.TextXAlignment.Left
 	t.Parent = createWindow
-	createWindowTitleRef = t
-	styleMetalText(t, true)
+	createTitleRef = t
+	styleText(t)
 
 	local close = Instance.new("TextButton")
 	close.Size = UDim2.new(0, 26, 0, 26)
 	close.Position = UDim2.new(1, -34, 0, 12)
 	close.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
 	close.BorderSizePixel = 0
-	close.Text = "×"
 	close.Font = Enum.Font.GothamBold
 	close.TextSize = 18
 	close.AutoButtonColor = false
 	close.Parent = createWindow
+	createCloseRef = close
 	round(close, UDim.new(1, 0))
 	addStroke(close, 1, 0.3, ACCENT)
 	styleText(close)
@@ -11251,14 +11260,13 @@ local function startCreateWindow(parent)
 	createNameBox.Position = UDim2.new(0, 14, 0, 44)
 	createNameBox.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 	createNameBox.BorderSizePixel = 0
-	createNameBox.PlaceholderText = getUiText("Tên script", "Script name")
+	createNameBox.PlaceholderText = (currentLanguage == "vn") and "Tên script" or "Script name"
 	createNameBox.Text = ""
 	createNameBox.ClearTextOnFocus = false
 	createNameBox.Font = Enum.Font.Gotham
 	createNameBox.TextSize = 13
 	createNameBox.TextXAlignment = Enum.TextXAlignment.Left
 	createNameBox.Parent = createWindow
-	createNameBoxRef = createNameBox
 	round(createNameBox, UDim.new(0, 10))
 	addStroke(createNameBox, 1, 0.45, ACCENT)
 	styleText(createNameBox)
@@ -11272,7 +11280,7 @@ local function startCreateWindow(parent)
 	createScriptBox.Position = UDim2.new(0, 14, 0, 82)
 	createScriptBox.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
 	createScriptBox.BorderSizePixel = 0
-	createScriptBox.PlaceholderText = getUiText("Viết script ở đây", "Write script here")
+	createScriptBox.PlaceholderText = (currentLanguage == "vn") and "Viết script ở đây" or "Write script here"
 	createScriptBox.Text = ""
 	createScriptBox.ClearTextOnFocus = false
 	createScriptBox.MultiLine = true
@@ -11282,7 +11290,6 @@ local function startCreateWindow(parent)
 	createScriptBox.TextSize = 12
 	createScriptBox.TextXAlignment = Enum.TextXAlignment.Left
 	createScriptBox.Parent = createWindow
-	createScriptBoxRef = createScriptBox
 	round(createScriptBox, UDim.new(0, 10))
 	addStroke(createScriptBox, 1, 0.45, ACCENT)
 	styleText(createScriptBox)
@@ -11297,12 +11304,12 @@ local function startCreateWindow(parent)
 	done.Position = UDim2.new(1, -134, 1, -38)
 	done.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
 	done.BorderSizePixel = 0
-	done.Text = getUiText("Hoàn tất", "Done")
+	createDoneRef = done
+	done.Text = (currentLanguage == "vn") and "Hoàn tất" or "Done"
 	done.Font = Enum.Font.GothamBold
 	done.TextSize = 13
 	done.AutoButtonColor = false
 	done.Parent = createWindow
-	createDoneButtonRef = done
 	round(done, UDim.new(0, 10))
 	addStroke(done, 1, 0.2, ACCENT)
 	styleText(done)
@@ -11312,12 +11319,12 @@ local function startCreateWindow(parent)
 	cancel.Position = UDim2.new(0, 14, 1, -38)
 	cancel.BackgroundColor3 = Color3.fromRGB(28, 0, 0)
 	cancel.BorderSizePixel = 0
-	cancel.Text = getUiText("Tắt", "Close")
+	createCancelRef = cancel
+	cancel.Text = (currentLanguage == "vn") and "Tắt" or "Close"
 	cancel.Font = Enum.Font.GothamBold
 	cancel.TextSize = 13
 	cancel.AutoButtonColor = false
 	cancel.Parent = createWindow
-	createCancelButtonRef = cancel
 	round(cancel, UDim.new(0, 10))
 	addStroke(cancel, 1, 0.34, ACCENT)
 	styleText(cancel)
@@ -11329,7 +11336,11 @@ local function startCreateWindow(parent)
 			BackgroundTransparency = 1
 		})
 		tw:Play()
-		tw.Completed:Once(function()
+		local conn
+		conn = tw.Completed:Connect(function()
+			if conn then
+				conn:Disconnect()
+			end
 			createOverlay.Visible = false
 			createWindow.Visible = false
 		end)
@@ -11347,6 +11358,7 @@ local function startCreateWindow(parent)
 			closeCreate()
 		end
 	end)
+	syncUIText()
 end
 
 local function startBom2devGUI()
@@ -11469,12 +11481,7 @@ local function startBom2devGUI()
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = header
 	titleRef = title
-	styleMetalText(title, true)  
-	addGradient(title, ColorSequence.new({  
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 245, 245)),  
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160, 160)),  
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 245, 245))  
-	}), 0)
+	styleText(title)
 
 	local subtitle = Instance.new("TextLabel")
 	subtitle.Size = UDim2.new(1, -210, 0, 14)
@@ -11530,7 +11537,6 @@ local function startBom2devGUI()
 	sidebarTitle.Size = UDim2.new(1, -12, 0, 18)
 	sidebarTitle.Position = UDim2.new(0, 6, 0, 8)
 	sidebarTitle.BackgroundTransparency = 1
-	sidebarTitle.Text = getUiText("Mục Lục", "Index")
 	sidebarTitle.Font = Enum.Font.GothamBold
 	sidebarTitle.TextSize = 11
 	sidebarTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -11584,13 +11590,13 @@ local function startBom2devGUI()
 	contentTitle.Size = UDim2.new(1, -20, 0, 18)
 	contentTitle.Position = UDim2.new(0, 8, 0, 6)
 	contentTitle.BackgroundTransparency = 1
-	contentTitle.Text = getUiText("Danh sách script", "Script List")
 	contentTitle.Font = Enum.Font.GothamBold
 	contentTitle.TextSize = 11
 	contentTitle.TextXAlignment = Enum.TextXAlignment.Left
 	contentTitle.Parent = contentPanel
 	contentTitleRef = contentTitle
 	styleText(contentTitle)
+	syncUIText()
 
 	ContentRef = Instance.new("ScrollingFrame")
 	ContentRef.Size = UDim2.new(1, -12, 1, -30)
@@ -11623,7 +11629,6 @@ local function startBom2devGUI()
 	end)
 
 	startCreateWindow(gui2)
-	refreshLanguageLabels()
 
 	local function showFrame()
 		frame.Visible = true
@@ -11644,7 +11649,11 @@ local function startBom2devGUI()
 			BackgroundTransparency = 1
 		})
 		tween:Play()
-		tween.Completed:Once(function()
+		local conn
+		conn = tween.Completed:Connect(function()
+			if conn then
+				conn:Disconnect()
+			end
 			if frame then
 				frame.Visible = false
 			end
