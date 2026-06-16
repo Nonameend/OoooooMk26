@@ -10906,13 +10906,13 @@ local function layoutFlowButtons(buttons)
 
 	clearChildren(ContentRef)
 
-	local list = {}
-	if currentFuncIndex == 2 then
-		table.insert(list, {
-			Text = { vn = "+", en = "+" },
-			Script = "__OPEN_CREATE__"
-		})
-	end
+	if functions[currentFuncIndex]
+and functions[currentFuncIndex].IsCreateMenu then
+	table.insert(list, {
+		Text = { vn = "+", en = "+" },
+		Script = "__OPEN_CREATE__"
+	})
+end
 
 	for _, v in ipairs(buttons) do
 		table.insert(list, v)
