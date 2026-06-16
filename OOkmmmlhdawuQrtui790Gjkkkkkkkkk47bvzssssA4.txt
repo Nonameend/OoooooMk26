@@ -10921,6 +10921,15 @@ local function layoutFlowButtons(buttons)
 			NumberSequenceKeypoint.new(1, 0.04)
 		})
 
+		local bar = Instance.new("Frame")
+		bar.Name = "Bar"
+		bar.Size = UDim2.new(0, 4, 1, -12)
+		bar.Position = UDim2.new(0, 7, 0, 6)
+		bar.BackgroundColor3 = Color3.fromRGB(120, 18, 18)
+		bar.BorderSizePixel = 0
+		bar.Parent = btn
+		round(bar, UDim.new(1, 0))
+
 		local title = Instance.new("TextLabel")
 		title.BackgroundTransparency = 1
 		title.Size = UDim2.new(1, -18, 1, 0)
@@ -11028,6 +11037,15 @@ local function buildFuncButtons()
 			NumberSequenceKeypoint.new(0, 0.08),
 			NumberSequenceKeypoint.new(1, 0.04)
 		})
+
+		local bar = Instance.new("Frame")
+		bar.Name = "Bar"
+		bar.Size = UDim2.new(0, 4, 1, -12)
+		bar.Position = UDim2.new(0, 7, 0, 6)
+		bar.BackgroundColor3 = Color3.fromRGB(120, 18, 18)
+		bar.BorderSizePixel = 0
+		bar.Parent = btn
+		round(bar, UDim.new(1, 0))
 
 		local txt = Instance.new("TextLabel")
 		txt.BackgroundTransparency = 1
