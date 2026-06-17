@@ -1290,14 +1290,14 @@ local function createBodiesOn(part)
 	destroyBodies()
 
 	activeBg = Instance.new("BodyGyro")
-	activeBg.P = 9e4
-	activeBg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+	activeBg.P = 11e4
+	activeBg.MaxTorque = Vector3.new(11e9, 11e9, 11e9)
 	activeBg.CFrame = part.CFrame
 	activeBg.Parent = part
 
 	activeBv = Instance.new("BodyVelocity")
-	activeBv.Velocity = Vector3.new(0, 0.1, 0)
-	activeBv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	activeBv.Velocity = Vector3.new(0, 0, 0)
+	activeBv.MaxForce = Vector3.new(11e9, 11e9, 11e9)
 	activeBv.Parent = part
 end
 
