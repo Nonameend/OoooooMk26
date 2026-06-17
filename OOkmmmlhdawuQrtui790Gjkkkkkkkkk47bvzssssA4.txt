@@ -7810,7 +7810,216 @@ end)
 
 {Text = {vn = "Giải Trí", en = "Fun"}, Scripts = {
 {Text = {vn = "Đá Bay", en = "Fling"}, Script = [[
-local Players=game:GetService("Players");local RunService=game:GetService("RunService");local StarterGui=game:GetService("StarterGui");local LocalPlayer=Players.LocalPlayer;_G.WalkFlingEnabled=_G.WalkFlingEnabled or false;local walkflinging=false;local flingThread=nil;local steppedConn=nil;local function notify(t)pcall(function()StarterGui:SetCore("SendNotification",{Title="Đá Bay",Text=t,Duration=4})end)end;local function startWalkFling(char)local Root=char:WaitForChild("HumanoidRootPart");local Humanoid=char:WaitForChild("Humanoid");Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,false);Humanoid.BreakJointsOnDeath=false;walkflinging=true;Root.CanCollide=false;Humanoid:ChangeState(Enum.HumanoidStateType.Physics);steppedConn=RunService.Stepped:Connect(function()if walkflinging then Humanoid.Health=math.huge;Humanoid.MaxHealth=math.huge end end);flingThread=task.spawn(function()while walkflinging and Root and Root.Parent do RunService.Heartbeat:Wait();local vel=Root.AssemblyLinearVelocity;Root.AssemblyLinearVelocity=vel*9999+Vector3.new(0,9999,0);RunService.RenderStepped:Wait();Root.AssemblyLinearVelocity=vel;RunService.Stepped:Wait();Root.AssemblyLinearVelocity=vel+Vector3.new(0,0.1,0)end end)end;local function stopWalkFling()walkflinging=false;if steppedConn then steppedConn:Disconnect();steppedConn=nil end;if flingThread then task.cancel(flingThread);flingThread=nil end;local char=LocalPlayer.Character;if char then local Root=char:FindFirstChild("HumanoidRootPart");local Humanoid=char:FindFirstChildOfClass("Humanoid");if Root then Root.AssemblyLinearVelocity=Vector3.zero;Root.CanCollide=true end;if Humanoid then Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,true);Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)end end end;if not _G.WalkFlingEnabled then _G.WalkFlingEnabled=true;notify("Bật");if LocalPlayer.Character then startWalkFling(LocalPlayer.Character)end;LocalPlayer.CharacterAdded:Connect(function(c)if _G.WalkFlingEnabled then startWalkFling(c)end end)else _G.WalkFlingEnabled=false;stopWalkFling();notify("Tắt")end
+local P = game.Players
+local TS = game.TweenService
+local CG = game.CoreGui
+
+local player = P.LocalPlayer
+
+local GUI_NAME = "Bom2devAnimUI"
+pcall(function()
+	local old = CG:FindFirstChild(GUI_NAME)
+	if old then
+		old:Destroy()
+	end
+end)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = GUI_NAME
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = CG
+
+local function corner(obj, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r or 12)
+	c.Parent = obj
+	return c
+end
+
+local function stroke(obj, thick, trans, color)
+	local s = Instance.new("UIStroke")
+	s.Thickness = thick or 1
+	s.Transparency = trans or 0
+	s.Color = color or Color3.fromRGB(255, 0, 0)
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.LineJoinMode = Enum.LineJoinMode.Round
+	s.Parent = obj
+	return s
+end
+
+local function gradient(obj, seq, rot)
+	local g = Instance.new("UIGradient")
+	g.Color = seq
+	g.Rotation = rot or 0
+	g.Parent = obj
+	return g
+end
+
+local function styleBomText(obj)
+	obj.TextColor3 = Color3.fromRGB(255, 242, 242)
+	obj.Font = Enum.Font.GothamBlack
+	local g = Instance.new("UIGradient")
+	g.Rotation = 0
+	g.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	})
+	g.Parent = obj
+	return g
+end
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 100, 0, 90)
+main.Position = UDim2.new(0.1, 0, 0.4, 0)
+main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+main.BackgroundTransparency = 0.02
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = gui
+main.ZIndex = 2
+corner(main, 14)
+stroke(main, 1.35, 0.12, Color3.fromRGB(255, 0, 0))
+
+local mainGrad = gradient(main, ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(0.2, Color3.fromRGB(78, 0, 0)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+	ColorSequenceKeypoint.new(0.8, Color3.fromRGB(78, 0, 0)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+}), 25)
+mainGrad.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 0.08),
+	NumberSequenceKeypoint.new(1, 0.03)
+})
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -10, 0, 18)
+title.Position = UDim2.new(0, 5, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "Anim Fling"
+title.TextSize = 13
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.ZIndex = 4
+title.Parent = main
+local titleGrad = styleBomText(title)
+
+local function makeButton(text, top)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, -10, 0, 28)
+	btn.Position = UDim2.new(0, 5, 0, top)
+	btn.BackgroundColor3 = Color3.fromRGB(70, 0, 0)
+	btn.BackgroundTransparency = 0.02
+	btn.BorderSizePixel = 0
+	btn.Text = text
+	btn.TextSize = 13
+	btn.AutoButtonColor = false
+	btn.ZIndex = 4
+	btn.Parent = main
+	corner(btn, 8)
+	stroke(btn, 1, 0.12, Color3.fromRGB(255, 0, 0))
+
+	local bgGrad = gradient(btn, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 90)
+
+	local topLine = Instance.new("Frame")
+	topLine.Size = UDim2.new(1, -8, 0, 1)
+	topLine.Position = UDim2.new(0, 4, 0, 3)
+	topLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	topLine.BackgroundTransparency = 0.86
+	topLine.BorderSizePixel = 0
+	topLine.ZIndex = 5
+	topLine.Parent = btn
+
+	local txtGrad = styleBomText(btn)
+
+	return btn, bgGrad, txtGrad
+end
+
+local btn1, btn1BgGrad, btn1TextGrad = makeButton("Đá xoay", 25)
+local btn2, btn2BgGrad, btn2TextGrad = makeButton("Đá Mạnh", 57)
+
+local function getChar()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid")
+	local animator = hum:FindFirstChildOfClass("Animator")
+	if not animator then
+		animator = Instance.new("Animator")
+		animator.Parent = hum
+	end
+	return char, hum, animator
+end
+
+local currentTrack
+
+local function stopCurrent()
+	if currentTrack then
+		pcall(function()
+			currentTrack:Stop(0)
+		end)
+		pcall(function()
+			currentTrack:Destroy()
+		end)
+		currentTrack = nil
+	end
+end
+
+local function playAnimation(animId)
+	local _, _, animator = getChar()
+	stopCurrent()
+
+	local anim = Instance.new("Animation")
+	anim.AnimationId = "rbxassetid://" .. tostring(animId)
+
+	local track = animator:LoadAnimation(anim)
+	track.Priority = Enum.AnimationPriority.Action4
+	track.Looped = false
+	currentTrack = track
+
+	track.Stopped:Connect(function()
+		if currentTrack == track then
+			currentTrack = nil
+		end
+		pcall(function()
+			track:Destroy()
+		end)
+	end)
+
+	track:Play(0.05, 1, 1)
+	task.delay(0.2, function()
+		pcall(function()
+			anim:Destroy()
+		end)
+	end)
+end
+
+btn1.Activated:Connect(function()
+	playAnimation(118139885865308)
+end)
+
+btn2.Activated:Connect(function()
+	playAnimation(133566007754001)
+end)
+
+task.spawn(function()
+	while gui.Parent do
+		task.wait(0.05)
+		local r = (tick() * 25) % 360
+		titleGrad.Rotation = r
+		btn1TextGrad.Rotation = r
+		btn2TextGrad.Rotation = r
+		mainGrad.Rotation = (tick() * 12) % 360
+		btn1BgGrad.Rotation = (tick() * 18) % 360
+		btn2BgGrad.Rotation = (tick() * 18) % 360
+	end
+end)
+local Players=game:GetService("Players");local RunService=game:GetService("RunService");local StarterGui=game:GetService("StarterGui");local LocalPlayer=Players.LocalPlayer;_G.WalkFlingEnabled=_G.WalkFlingEnabled or false;local walkflinging=false;local flingThread=nil;local steppedConn=nil;local function notify(t)pcall(function()StarterGui:SetCore("SendNotification",{Title="Đá Bay",Text=t,Duration=4})end)end;local function startWalkFling(char)local Root=char:WaitForChild("HumanoidRootPart");local Humanoid=char:WaitForChild("Humanoid");Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,false);Humanoid.BreakJointsOnDeath=false;walkflinging=true;Root.CanCollide=false;Humanoid:ChangeState(Enum.HumanoidStateType.Physics);steppedConn=RunService.Stepped:Connect(function()if walkflinging then Humanoid.Health=math.huge;Humanoid.MaxHealth=math.huge end end);flingThread=task.spawn(function()while walkflinging and Root and Root.Parent do RunService.Heartbeat:Wait();local vel=Root.AssemblyLinearVelocity;Root.AssemblyLinearVelocity=vel*10+Vector3.new(0,10,0);RunService.RenderStepped:Wait();Root.AssemblyLinearVelocity=vel;RunService.Stepped:Wait();Root.AssemblyLinearVelocity=vel+Vector3.new(0,0.1,0)end end)end;local function stopWalkFling()walkflinging=false;if steppedConn then steppedConn:Disconnect();steppedConn=nil end;if flingThread then task.cancel(flingThread);flingThread=nil end;local char=LocalPlayer.Character;if char then local Root=char:FindFirstChild("HumanoidRootPart");local Humanoid=char:FindFirstChildOfClass("Humanoid");if Root then Root.AssemblyLinearVelocity=Vector3.zero;Root.CanCollide=true end;if Humanoid then Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead,true);Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)end end end;if not _G.WalkFlingEnabled then _G.WalkFlingEnabled=true;notify("Bật");if LocalPlayer.Character then startWalkFling(LocalPlayer.Character)end;LocalPlayer.CharacterAdded:Connect(function(c)if _G.WalkFlingEnabled then startWalkFling(c)end end)else _G.WalkFlingEnabled=false;stopWalkFling();notify("Tắt")end
 ]]},
 {Text = {vn = "Đá Bay 2", en = "Fling 2"}, Script = [[
 
