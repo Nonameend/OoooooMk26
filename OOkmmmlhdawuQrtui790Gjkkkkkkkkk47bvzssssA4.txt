@@ -950,9 +950,9 @@ end)
 local Players = game.Players
 local RunService = game.RunService
 local TweenService = game.TweenService
+local CoreGui = game.CoreGui
 
 local player = Players.LocalPlayer
-local CoreGui = game.CoreGui
 
 local old = CoreGui:FindFirstChild("Bom2devFlyUI")
 if old then
@@ -966,59 +966,189 @@ gui.ResetOnSpawn = false
 gui.Parent = CoreGui
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 160, 0, 60)
+main.Size = UDim2.new(0, 170, 0, 76)
 main.Position = UDim2.new(0.1, 0, 0.4, 0)
-main.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
-main.BackgroundTransparency = 0.1
+main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+main.BackgroundTransparency = 0.02
+main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
 main.Parent = gui
 
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 14)
+mainCorner.Parent = main
 
-local stroke = Instance.new("UIStroke", main)
-stroke.Thickness = 2
-stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Thickness = 1.5
+mainStroke.Transparency = 0.12
+mainStroke.Color = Color3.fromRGB(255, 0, 0)
+mainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+mainStroke.LineJoinMode = Enum.LineJoinMode.Round
+mainStroke.Parent = main
 
-task.spawn(function()
-	local hue = 0
-	while gui.Parent do
-		task.wait(0.05)
-		hue = (hue + 0.01) % 1
-		stroke.Color = Color3.fromHSV(hue, 1, 1)
-	end
-end)
+local mainGrad = Instance.new("UIGradient")
+mainGrad.Rotation = 25
+mainGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(0.2, Color3.fromRGB(70, 0, 0)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+	ColorSequenceKeypoint.new(0.8, Color3.fromRGB(70, 0, 0)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+})
+mainGrad.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 0.08),
+	NumberSequenceKeypoint.new(1, 0.03)
+})
+mainGrad.Parent = main
 
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1, 0, 0, 20)
+local glow = Instance.new("ImageLabel")
+glow.BackgroundTransparency = 1
+glow.Size = UDim2.new(1, 30, 1, 30)
+glow.Position = UDim2.new(0, -15, 0, -15)
+glow.Image = "rbxassetid://5028857084"
+glow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+glow.ImageTransparency = 0.9
+glow.ScaleType = Enum.ScaleType.Slice
+glow.SliceCenter = Rect.new(24, 24, 276, 276)
+glow.ZIndex = 0
+glow.Parent = main
+
+local line = Instance.new("Frame")
+line.Size = UDim2.new(1, -16, 0, 1)
+line.Position = UDim2.new(0, 8, 0, 28)
+line.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+line.BackgroundTransparency = 0.66
+line.BorderSizePixel = 0
+line.ZIndex = 2
+line.Parent = main
+
+local lineGrad = Instance.new("UIGradient")
+lineGrad.Rotation = 0
+lineGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 90, 90)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+})
+lineGrad.Parent = line
+
+local function styleBomText(obj)
+	obj.TextColor3 = Color3.fromRGB(255, 242, 242)
+	obj.Font = Enum.Font.GothamBlack
+
+	local g = Instance.new("UIGradient")
+	g.Rotation = 0
+	g.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	})
+	g.Parent = obj
+
+	return g
+end
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -18, 0, 18)
+title.Position = UDim2.new(0, 9, 0, 5)
 title.BackgroundTransparency = 1
 title.Text = "Bay V2"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.ZIndex = 3
+title.Parent = main
 
-local speedBox = Instance.new("TextBox", main)
-speedBox.Size = UDim2.new(0.55, 0, 0, 25)
-speedBox.Position = UDim2.new(0.05, 0, 0.45, 0)
-speedBox.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
-speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedBox.Font = Enum.Font.Gotham
-speedBox.PlaceholderText = "Tốc độ"
+local titleGrad = styleBomText(title)
+
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(0.5, -10, 0, 26)
+speedBox.Position = UDim2.new(0, 8, 0, 38)
+speedBox.BackgroundColor3 = Color3.fromRGB(34, 34, 38)
+speedBox.BackgroundTransparency = 0.03
+speedBox.BorderSizePixel = 0
 speedBox.Text = "1"
-speedBox.TextScaled = true
+speedBox.PlaceholderText = "Tốc độ"
+speedBox.PlaceholderColor3 = Color3.fromRGB(210, 210, 210)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.Font = Enum.Font.GothamBlack
+speedBox.TextSize = 14
+speedBox.ClearTextOnFocus = false
+speedBox.ZIndex = 3
 speedBox.Parent = main
-Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 8)
 
-local flyBtn = Instance.new("TextButton", main)
-flyBtn.Size = UDim2.new(0.45, 0, 0, 30)
-flyBtn.Position = UDim2.new(0.5, 0, 0.45, 0)
-flyBtn.BackgroundColor3 = Color3.fromRGB(50, 255, 200)
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 9)
+speedCorner.Parent = speedBox
+
+local speedStroke = Instance.new("UIStroke")
+speedStroke.Color = Color3.fromRGB(255, 0, 0)
+speedStroke.Transparency = 0
+speedStroke.Thickness = 1
+speedStroke.Parent = speedBox
+
+local speedGrad = Instance.new("UIGradient")
+speedGrad.Rotation = 0
+speedGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 200, 200)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+})
+speedGrad.Parent = speedBox
+
+local speedTextGrad = styleBomText(speedBox)
+
+local flyBtn = Instance.new("TextButton")
+flyBtn.Size = UDim2.new(0.5, -10, 0, 26)
+flyBtn.Position = UDim2.new(0.5, 2, 0, 38)
+flyBtn.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+flyBtn.BackgroundTransparency = 0.02
+flyBtn.BorderSizePixel = 0
 flyBtn.Text = "Bay"
-flyBtn.Font = Enum.Font.GothamBold
-flyBtn.TextSize = 16
-flyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+flyBtn.Font = Enum.Font.GothamBlack
+flyBtn.TextSize = 14
+flyBtn.AutoButtonColor = false
+flyBtn.TextXAlignment = Enum.TextXAlignment.Center
+flyBtn.TextYAlignment = Enum.TextYAlignment.Center
+flyBtn.ZIndex = 3
 flyBtn.Parent = main
-Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0, 8)
+
+local flyCorner = Instance.new("UICorner")
+flyCorner.CornerRadius = UDim.new(0, 9)
+flyCorner.Parent = flyBtn
+
+local flyStroke = Instance.new("UIStroke")
+flyStroke.Color = Color3.fromRGB(255, 0, 0)
+flyStroke.Transparency = 0
+flyStroke.Thickness = 1
+flyStroke.Parent = flyBtn
+
+local flyGrad = Instance.new("UIGradient")
+flyGrad.Rotation = 0
+flyGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+})
+flyGrad.Parent = flyBtn
+
+local flyTextGrad = styleBomText(flyBtn)
+
+task.spawn(function()
+	while gui.Parent do
+		task.wait(0.05)
+
+		local r = (tick() * 25) % 360
+		titleGrad.Rotation = r
+		speedTextGrad.Rotation = r
+		flyTextGrad.Rotation = r
+
+		mainGrad.Rotation = (tick() * 12) % 360
+		speedGrad.Rotation = (tick() * 16) % 360
+		flyGrad.Rotation = (tick() * 18) % 360
+		lineGrad.Rotation = (tick() * 20) % 360
+		glow.ImageTransparency = 0.9 - (math.sin(tick() * 2) * 0.03)
+	end
+end)
 
 local speeds = tonumber(speedBox.Text) or 1
 local nowe = false
@@ -1035,7 +1165,7 @@ local flyTracks = {}
 local currentFlyTrack = nil
 local currentRigType = nil
 
-local fadeTime = 0.5
+local fadeTime = 0.3
 
 local function getChar()
 	return player.Character
@@ -1206,17 +1336,17 @@ local function loadFlyAnimations(hum)
 	local animIds
 
 	if currentRigType == Enum.HumanoidRigType.R6 then
-		animIds = {
-			idle = "rbxassetid://282574440",
-			move = "rbxassetid://282574440"
-		}
-	else
-		animIds = {
-			idle = "rbxassetid://77529400769588",
-			fast = "rbxassetid://92365791487740",
-			ultra = "rbxassetid://85064366773524"
-		}
-	end
+	animIds = {
+		idle = "rbxassetid://",
+		move = "rbxassetid://282574440"
+	}
+else
+	animIds = {
+		idle = "rbxassetid://77529400769588",
+		slow = "rbxassetid://92365791487740",
+		fast = "rbxassetid://85064366773524"
+	}
+end
 
 	for name, id in pairs(animIds) do
 		local anim = Instance.new("Animation")
@@ -1231,21 +1361,23 @@ local function loadFlyAnimations(hum)
 end
 
 local function getFlyAnimationName(speedValue, moving)
-	if currentRigType == Enum.HumanoidRigType.R6 then
-		if moving then
-			return "move"
-		end
+	if not moving then
 		return "idle"
 	end
 
-	if moving then
-		if speedValue > 5 then
-			return "ultra"
-		end
+	if speedValue <= 3 then
+		return "idle"
+	end
+
+	if currentRigType == Enum.HumanoidRigType.R6 then
+		return "move"
+	end
+
+	if speedValue > 7 then
 		return "fast"
 	end
 
-	return "idle"
+	return "slow"
 end
 
 local function setFlyAnimation(speedValue, moving)
