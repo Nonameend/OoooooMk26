@@ -6268,8 +6268,6 @@ local function restoreAll()
 
 	toggleBtn.Text = "Ring"
 
-	toggleBtn.BackgroundColor3 = Color3.fromRGB(70,45,140)
-
 	if state.conn then state.conn:Disconnect(); state.conn = nil end
 
 	if state._descConn then pcall(function() state._descConn:Disconnect() end); state._descConn = nil end
@@ -6622,8 +6620,6 @@ toggleBtn.MouseButton1Click:Connect(function()
 
 		toggleBtn.Text = "Bật"
 
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(60,200,120)
-
 		activateCircleMode()
 
 		ensureCenter()
@@ -6633,8 +6629,6 @@ toggleBtn.MouseButton1Click:Connect(function()
 	else
 
 		toggleBtn.Text = "Tắt"
-
-		toggleBtn.BackgroundColor3 = Color3.fromRGB(70,45,140)
 
 		if state.conn then state.conn:Disconnect(); state.conn = nil end
 
