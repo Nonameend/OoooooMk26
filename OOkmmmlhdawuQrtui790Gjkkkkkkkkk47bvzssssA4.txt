@@ -1365,7 +1365,7 @@ local function getFlyAnimationName(speedValue, moving)
 		return "idle"
 	end
 
-	if speedValue <= 3 then
+	if speedValue <= 1 then
 		return "idle"
 	end
 
