@@ -5606,7 +5606,129 @@ if getgenv().TpLoop then
 		end
 	end)
 end
+]]},
+{Text = {vn = "Xem Kho Đồ", en = "View BackPack"}, Script = [[
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
+_G.ToggleBackpackESP = not _G.ToggleBackpackESP
+
+if _G.BackpackESPConnection then
+	_G.BackpackESPConnection:Disconnect()
+	_G.BackpackESPConnection = nil
+end
+
+local function cleanupGuis()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				local gui = hrp:FindFirstChild("ESPBackpackGUI")
+				if gui then
+					gui:Destroy()
+				end
+			end
+		end
+	end
+end
+
+if not _G.ToggleBackpackESP then
+	cleanupGuis()
+	return
+end
+
+_G.BackpackESPConnection = RunService.Heartbeat:Connect(function()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+			local backpack = player:FindFirstChild("Backpack")
+			
+			if hrp and backpack then
+				local gui = hrp:FindFirstChild("ESPBackpackGUI")
+				
+				if not gui then
+					gui = Instance.new("BillboardGui")
+					gui.Name = "ESPBackpackGUI"
+					gui.Size = UDim2.new(0, 300, 0, 40)
+					gui.StudsOffset = Vector3.new(0, -3.5, 0)
+					gui.AlwaysOnTop = true
+					
+					local container = Instance.new("Frame")
+					container.Name = "Container"
+					container.Size = UDim2.new(1, 0, 1, 0)
+					container.BackgroundTransparency = 1
+					container.Parent = gui
+					
+					local layout = Instance.new("UIListLayout")
+					layout.FillDirection = Enum.FillDirection.Horizontal
+					layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+					layout.VerticalAlignment = Enum.VerticalAlignment.Center
+					layout.Padding = UDim.new(0, 4)
+					layout.SortOrder = Enum.SortOrder.LayoutOrder
+					layout.Parent = container
+					
+					gui.Parent = hrp
+				end
+				
+				local container = gui:FindFirstChild("Container")
+				if container then
+					local currentTools = {}
+					for i, tool in ipairs(backpack:GetChildren()) do
+						if tool:IsA("Tool") then
+							currentTools[tool] = i
+						end
+					end
+					
+					for _, child in ipairs(container:GetChildren()) do
+						if not child:IsA("UIListLayout") then
+							local foundTool = false
+							for tool, _ in pairs(currentTools) do
+								if child.Name == tool.Name then
+									foundTool = true
+									break
+								end
+							end
+							if not foundTool then
+								child:Destroy()
+							end
+						end
+					end
+					
+					for tool, orderIndex in pairs(currentTools) do
+						if not container:FindFirstChild(tool.Name) then
+							if tool.TextureId and tool.TextureId ~= "" then
+								local img = Instance.new("ImageLabel")
+								img.Name = tool.Name
+								img.Size = UDim2.new(0, 15, 0, 15)
+								img.Image = tool.TextureId
+								img.BackgroundTransparency = 1
+								img.LayoutOrder = orderIndex
+								img.Parent = container
+							else
+								local txt = Instance.new("TextLabel")
+								txt.Name = tool.Name
+								txt.Size = UDim2.new(0, 15, 0, 15)
+								txt.Text = tool.Name
+								txt.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+								txt.BackgroundTransparency = 0.5
+								txt.TextColor3 = Color3.fromRGB(255, 255, 255)
+								txt.TextScaled = true
+								txt.LayoutOrder = orderIndex
+								txt.Parent = container
+							end
+						end
+					end
+				end
+			else
+				local existingGui = hrp and hrp:FindFirstChild("ESPBackpackGUI")
+				if existingGui then
+					existingGui:Destroy()
+				end
+			end
+		end
+	end
+end)
 ]]},
 }},
 
