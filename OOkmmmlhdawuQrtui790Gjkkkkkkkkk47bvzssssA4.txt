@@ -717,7 +717,7 @@ local function neutralizeBodyMovers(ch)
 
 	for _,obj in ipairs(ch:GetDescendants()) do
 
-		if obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") or obj:IsA("BodyPosition") or obj:IsA("BodyForce") or obj:IsA("BodyThrust") or obj:IsA("AlignPosition") or obj:IsA("AlignOrientation") or obj:IsA("VectorForce") or obj:IsA("LinearVelocity") then
+	if obj:IsA("BodyVelocity") or obj:IsA("BodyGyro") or obj:IsA("BodyPosition") or obj:IsA("BodyForce") or obj:IsA("BodyThrust") or obj:IsA("AlignPosition") or obj:IsA("AlignOrientation") or obj:IsA("VectorForce") or obj:IsA("LinearVelocity") then
 
 			pcall(function() obj:Destroy() end)
 
@@ -787,7 +787,7 @@ local function createInvisChairAt(cf)
 
 	seat.CanCollide = false
 
-	seat.Transparency = 1
+	seat.Transparency = 0.1
 
 	seat.CFrame = cf
 
