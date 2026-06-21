@@ -859,9 +859,9 @@ local function toggleInvisibility()
 
 			task.wait()
 
-			pcall(function() ch:MoveTo(Vector3.new(0, 999999999999, 0)) end)
+			pcall(function() ch:MoveTo(Vector3.new(0, 9e8, 0)) end)
 
-			task.wait(0.13)
+			task.wait(0.1)
 
 			local cf = savedpos or (hrp and hrp.CFrame) or CFrame.new(0,0,0)
 
@@ -921,7 +921,7 @@ toggleButton.MouseButton1Click:Connect(toggleInvisibility)
 
 player.CharacterAdded:Connect(function()
 
-	task.wait(0.13)
+	task.wait(0.1)
 
 	local ch = player.Character
 
