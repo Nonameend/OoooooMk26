@@ -9709,7 +9709,7 @@ local function setupUI()
 	open.BorderSizePixel = 0
 	open.Text = "Hoạt ảnh"
 	open.Font = Enum.Font.GothamBlack
-	open.TextScaled = true
+	open.TextSize = 11
 	open.TextColor3 = Color3.fromRGB(255, 242, 242)
 	open.Active = true
 	open.Draggable = true
