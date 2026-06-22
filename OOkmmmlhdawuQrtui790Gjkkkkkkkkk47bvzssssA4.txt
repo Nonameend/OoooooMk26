@@ -9442,495 +9442,1240 @@ end)
 
 ]]},
 
-{Text = {vn = "Hành Động R15", en = "Animation R15"}, Script = [[
-
+{Text = {vn = "Hoạt ảnh R15", en = "Animate R15"}, Script = [[
 local Players = game:GetService("Players")
-
-local TextService = game:GetService("TextService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-for _,v in ipairs(player:WaitForChild("PlayerGui"):GetChildren()) do
-
-	if v and v.Name == "AnimFEGui" then		pcall(function() v:Destroy() end)
-
+for _, v in ipairs(playerGui:GetChildren()) do
+	if v and v.Name == "AnimHAGui" then
+		pcall(function()
+			v:Destroy()
+		end)
 	end
-
 end
 
 local gui = Instance.new("ScreenGui")
-
-gui.Name = "AnimFEGui"
-
+gui.Name = "AnimHAGui"
 gui.ResetOnSpawn = false
-
 gui.IgnoreGuiInset = true
-
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = playerGui
 
 local animations = {
-
-	{name = "Nhảy Đùa", id = 124982597491660, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Trực Thăng", id = 95301257497525, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Trực Thăng 2", id = 91257498644328, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Lắc Người", id = 108171959207138, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Dẫm Đạp", id = 115048845533448, speed = 1.4, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Cá Vẫy", id = 79075971527754, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Gangnamsyle", id = 100531289776679, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Cute", id = 88315693621494, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Vòng Không", id = 94324173536622, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tim Trái", id = 110936682778213, speed = 0, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tim Phải", id = 84671941093489, speed = 0, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tu Luyện", id = 86872878957632, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Cổ Điển", id = 88455578674030, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ngồi", id = 97185364700038, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tư Thế Chiến Đấu", id = 116763940575803, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ai Thế", id = 81389876138766, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ngồi Lắc", id = 130995344283026, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ngồi Lắc 2", id = 131836270858895, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Con Sâu", id = 90333292347820, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Rắn", id = 98476854035224, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Sắp Gục Ngã", id = 129787664584610, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tử Hình", id = 113475147402830, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nằm Chống Cằm", id = 80754582835479, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Che Mắt", id = 92266904563270, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Chỉ Thẳng", id = 122120443600865, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Khinh Thường", id = 120629563851640, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nằm Lơ Lửng", id = 77840765435893, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Vành Đai", id = 109873544976020, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Không Đầu", id = 78837807518622, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Tôi!", id = 103235915424832, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Máy Bay", id = 82135680487389, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Thể Hiện", id = 90802740360125, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Trung Quốc", id = 131758838511368, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Chân Không Chạm Đất", id = 74288964113793, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Xe", id = 108747312576405, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Theo Trend", id = 93497729736287, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Xe Tăng", id = 94915612757079, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Đi Cổ Điển", id = 107806791584829, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Sinh Vật Kì Quái", id = 87025086742503, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Skibidi Toilet", id = 127154705636043, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Khóc Lăn", id = 129699431093711, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Suy Nghĩ", id = 127088545449493, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Giả Chết", id = 88130117312312, speed = 1, timepos = 0, looped = false, freezeonend = true},
-
-	{name = "Lắc Đầu", id = 135611169366768, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Kiểm Tra Trang Phục", id = 81176957565811, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Đầu Hàng", id = 100537772865440, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Giả Định", id = 91294374426630, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Cúi Nhảy", id = 121966805049108, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Vui Mừng", id = 78653596566468, speed = 1, timepos = 0, looped = true, freezeonend = true},
-
-	{name = "Bóng Rổ", id = 92854797386719, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Vẹt", id = 101810746304426, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Bị Bắn", id = 102691551292124, speed = 1, timepos = 0, looped = false, freezeonend = true},
-
-	{name = "Ragdoll", id = 136224735234038, speed = 1, timepos = 0, looped = false, freezeonend = true},
-
-	{name = "Ngồi Buồn", id = 100798804992348, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Ngầu", id = 105459130960429, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhảy Billy", id = 137501135905857, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Bóng", id = 119242308765484, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Búa", id = 91423662648449, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Điệu Quái Vật", id = 137883764619555, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ngồi Xoay", id = 107217181254431, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nhào Lộn Nằm", id = 131205329995035, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Nổi", id = 89523370947906, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Chào", id = 103041144411206, speed = 1, timepos = 0, looped = false, freezeonend = true},
-
-	{name = "Bị Nhập", id = 90708290447388, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Lướt Ván", id = 100663712757148, speed = 0.8, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Sinh Vật Cao", id = 118864464720628, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
-	{name = "Ngồi Như Mèo", id = 99424293618796, speed = 1, timepos = 0, looped = true, freezeonend = false},
-
+{name = "Trượt", idle = 122257458498464, mood = 14366558676, walk = 122150855457006, run = 82598234841035, jump = 75290611992385, fall = 98600215928904, climb = 88763136693023, swim = 133308483266208, swimidle = 109346520324160, sit = 2506281703},
+{name = "Máy móc", idle = 10921248039, mood = 14366558676, walk = 10921255446, run = 10921250460, jump = 10921252123, fall = 10921251156, climb = 10921247141, swim = 10921253142, swimidle = 10921253767, sit = 2506281703},
+{name = "Dân chơi", idle = 10921071918, mood = 14366558676, walk = 10921082452, run = 10921076136, jump = 10921078135, fall = 10921077030, climb = 10921070953, swim = 10921079380, swimidle = 10921081059, sit = 2506281703},
+{name = "Mệt mỏi", idle = 10921344533, mood = 14366558676, walk = 10921355261, run = 616163682, jump = 10921351278, fall = 10921350320, climb = 10921343576, swim = 10921352344, swimidle = 10921353442, sit = 2506281703},
+{name = "Kỳ quặc", idle = 750781874, mood = 14366558676, walk = 750785693, run = 750783738, jump = 750782230, fall = 750780242, climb = 750779899, swim = 750784579, swimidle = 750785176, sit = 2506281703},
+{name = "Chú hề", idle = 10921330408, mood = 14366558676, walk = 10921342074, run = 10921336997, jump = 1083218792, fall = 10921337907, climb = 10921329322, swim = 10921340419, swimidle = 10921341319, sit = 2506281703},
+{name = "Ma", idle = 10921132962, mood = 14366558676, walk = 10921140719, run = 10921135644, jump = 10921137402, fall = 10921136539, climb = 10921132092, swim = 10921138209, swimidle = 10921139478, sit = 2506281703},
+{name = "Ninja", idle = 10921155160, mood = 14366558676, walk = 10921162768, run = 10921157929, jump = 10921160088, fall = 10921159222, climb = 10921154678, swim = 10921161002, swimidle = 10922757002, sit = 2506281703},
+{name = "Che mặt", idle = 10921315373, mood = 14366558676, walk = 10921326949, run = 10921320299, jump = 10921322186, fall = 10921321317, climb = 10921314188, swim = 10921324408, swimidle = 10921325443, sit = 2506281703},
+{name = "Lỗi chậm", idle = 137764781910579, mood = 14366558676, walk = 85809016093530, run = 101925097435036, jump = 74159004634379, fall = 98070939608691, climb = 108236155509584, swim = 83003487432457, swimidle = 112946194103503, sit = 2506281703},
 }
 
-local function rainbow(stroke)
+local currentPresetIndex = 1
+local enabled = true
 
-	task.spawn(function()
-
-		local h = 0
-
-		while stroke.Parent do
-
-			h = (h + 0.01) % 1
-
-			stroke.Color = Color3.fromHSV(h,1,1)
-
-			task.wait(0.03)
-
-		end
-
-	end)
-
+local function styleBomText(obj)
+	if not obj then
+		return nil
+	end
+	obj.TextColor3 = Color3.fromRGB(255, 242, 242)
+	obj.Font = Enum.Font.GothamBlack
+	local g = obj:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+	g.Rotation = 0
+	g.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	})
+	g.Parent = obj
+	return g
 end
 
-local open = Instance.new("TextButton")
-
-open.Size = UDim2.new(0,45,0,45)
-
-open.Position = UDim2.new(0.5,-30,0.2,0)
-
-open.BackgroundColor3 = Color3.fromRGB(0,0,0)
-
-open.TextColor3 = Color3.fromRGB(255,255,255)
-
-open.Font = Enum.Font.GothamBold
-
-open.TextSize = 14
-
-open.Text = "AnimFE"
-
-open.Parent = gui
-
-open.Active = true
-
-open.Draggable = true
-
-Instance.new("UICorner", open).CornerRadius = UDim.new(0, 6)
-
-local stroke = Instance.new("UIStroke", open)
-
-stroke.Thickness = 2
-
-stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-task.spawn(function()
-
-	local h = 0
-
-	while open.Parent do
-
-		h = (h + 0.005) % 1
-
-		stroke.Color = Color3.fromHSV(h, 1, 1)
-
-		task.wait(0.02)
-
-	end
-
-end)
-
-local frame = Instance.new("Frame")
-
-frame.Size = UDim2.new(0,350,0,280)
-
-frame.Position = UDim2.new(0.62,-260,0.6,-160)
-
-frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-
-frame.BackgroundTransparency = 0.5
-
-frame.Visible = false
-
-frame.Parent = gui
-
-Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
-
-local fs = Instance.new("UIStroke",frame)
-
-fs.Thickness = 2
-
-rainbow(fs)
-
-local header = Instance.new("TextLabel", frame)
-
-header.Size = UDim2.new(0,180,0,20)
-
-header.Position = UDim2.new(0,8,0,6)
-
-header.BackgroundTransparency = 1
-
-header.Font = Enum.Font.GothamBold
-
-header.TextSize = 14
-
-header.Text = "Animation FE R15"
-
-header.TextColor3 = Color3.fromRGB(255,255,255)
-
-header.TextXAlignment = Enum.TextXAlignment.Left
-
-local close = Instance.new("TextButton")
-
-close.Size = UDim2.new(0,30,0,30)
-
-close.Position = UDim2.new(1,-36,0,6)
-
-close.Text = "X"
-
-close.Font = Enum.Font.GothamBold
-
-close.TextSize = 14
-
-close.BackgroundTransparency = 1
-
-close.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-close.TextColor3 = Color3.fromRGB(255,255,255)
-
-close.Parent = frame
-
-local offBtn = Instance.new("TextButton")
-
-offBtn.Size = UDim2.new(0,30,0,30)
-
-offBtn.Position = UDim2.new(1,-72,0,6)
-
-offBtn.Text = "Tắt Anim"
-
-offBtn.Font = Enum.Font.GothamBold
-
-offBtn.TextSize = 12
-
-offBtn.BackgroundTransparency = 1
-
-offBtn.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-offBtn.TextColor3 = Color3.fromRGB(255,100,100)
-
-offBtn.Parent = frame
-
-local scroll = Instance.new("ScrollingFrame")
-
-scroll.Position = UDim2.new(0,10,0,40)
-
-scroll.Size = UDim2.new(0.95,-20,1,-54)
-
-scroll.ScrollBarThickness = 6
-
-scroll.CanvasSize = UDim2.new(0,0,0,0)
-
-scroll.BackgroundTransparency = 1
-
-scroll.Parent = frame
-
-local humanoid, animator, currentTrack
-
-local function setupHumanoid()
-
+local function makeCorner(obj, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, radius or 10)
+	c.Parent = obj
+	return c
+end
+
+local function makeStroke(obj, thickness, transparency, color)
+	local s = Instance.new("UIStroke")
+	s.Thickness = thickness or 1
+	s.Transparency = transparency or 0
+	s.Color = color or Color3.fromRGB(255, 0, 0)
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.LineJoinMode = Enum.LineJoinMode.Round
+	s.Parent = obj
+	return s
+end
+
+local function makeGradient(obj, sequence, rotation)
+	local g = Instance.new("UIGradient")
+	g.Color = sequence
+	g.Rotation = rotation or 0
+	g.Parent = obj
+	return g
+end
+
+local function getChar()
 	local char = player.Character or player.CharacterAdded:Wait()
-
-	humanoid = char:WaitForChild("Humanoid")
-
-	animator = humanoid:FindFirstChildOfClass("Animator") or Instance.new("Animator", humanoid)
-
+	local animate = char:FindFirstChild("Animate")
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	return char, animate, humanoid
 end
 
-setupHumanoid()
+local function getPreset()
+	return animations[currentPresetIndex]
+end
 
-player.CharacterAdded:Connect(function() task.wait(1) setupHumanoid() end)
+local function setAnimationId(obj, animId)
+	if not obj or not animId or animId == 0 then
+		return
+	end
+	if obj:IsA("Animation") then
+		obj.AnimationId = "rbxassetid://" .. tostring(animId)
+		return
+	end
+	for _, d in ipairs(obj:GetDescendants()) do
+		if d:IsA("Animation") then
+			d.AnimationId = "rbxassetid://" .. tostring(animId)
+		end
+	end
+end
 
-local function stopAnim()
-
-	if currentTrack then
-
-		currentTrack:Stop()
-
-		currentTrack = nil
-
+local function ensureAnimation(parent, name, animId)
+	if not parent then
+		return
 	end
 
-end
-
-local function playAnim(data)
-
-	if currentTrack then
-
-		currentTrack:Stop()
-
-		currentTrack = nil
-
+	local target = parent:FindFirstChild(name)
+	if target then
+		setAnimationId(target, animId)
+		return
 	end
 
 	local anim = Instance.new("Animation")
-
-	anim.AnimationId = "rbxassetid://"..data.id
-
-	local track = animator:LoadAnimation(anim)
-
-	track.Looped = data.looped
-
-	track:Play()
-
-	track:AdjustSpeed(data.speed)
-
-	if data.timepos>0 then track.TimePosition=data.timepos end
-
-	if data.freezeonend then
-
-		track.Stopped:Connect(function() track:AdjustSpeed(0) end)
-
-	end
-
-	currentTrack = track
-
+	anim.Name = name
+	anim.AnimationId = "rbxassetid://" .. tostring(animId or 0)
+	anim.Parent = parent
 end
 
-local padding = 6
+local function applyPresetToAnimate(character, preset)
+	if not enabled then
+		return
+	end
+	if not character or not preset then
+		return
+	end
 
-local x,y,rowH = 0,0,0
+	local animate = character:FindFirstChild("Animate")
+	if not animate then
+		animate = character:WaitForChild("Animate", 10)
+	end
+	if not animate then
+		return
+	end
 
-local function addButton(data)
+	local idleFolder = animate:FindFirstChild("idle")
+	if idleFolder then
+		local idle1 = idleFolder:FindFirstChild("Animation1") or idleFolder:FindFirstChildWhichIsA("Animation")
+		local idle2 = idleFolder:FindFirstChild("Animation2")
 
-	local btn = Instance.new("TextButton")
-
-	btn.BackgroundColor3 = Color3.fromRGB(25,25,25)
-
-	btn.TextColor3 = Color3.fromRGB(240,240,240)
-
-	btn.Font = Enum.Font.GothamBold
-
-	btn.TextSize = 14
-
-	btn.Text = data.name
-
-	btn.AutoButtonColor = false
-
-	btn.Parent = scroll
-
-	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
-
-	local strokeBtn = Instance.new("UIStroke", btn)
-
-	strokeBtn.Thickness = 2
-
-	strokeBtn.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-	task.spawn(function()
-
-		local h = 0
-
-		while btn.Parent do
-
-			h = (h + 0.005) % 1
-
-			strokeBtn.Color = Color3.fromHSV(h, 1, 1)
-
-			task.wait(0.02)
-
+		if idle1 then
+			setAnimationId(idle1, preset.idle)
+		else
+			ensureAnimation(idleFolder, "Animation1", preset.idle)
 		end
 
-	end)
-
-	local ts = TextService:GetTextSize(btn.Text,14,Enum.Font.GothamBold,Vector2.new(1000,1000))
-
-	local w,h = ts.X+25,25
-
-	local maxW = scroll.AbsoluteSize.X
-
-	if x + w > maxW then
-
-		x = 0
-
-		y = y + rowH + padding
-
-		rowH = 0
-
+		if idle2 then
+			setAnimationId(idle2, preset.mood or preset.idle)
+		else
+			ensureAnimation(idleFolder, "Animation2", preset.mood or preset.idle)
+		end
+	else
+		ensureAnimation(animate, "idle", preset.idle)
 	end
 
-	btn.Position = UDim2.new(0,x,0,y)
+	local stateMap = {
+		walk = preset.walk,
+		run = preset.run,
+		jump = preset.jump,
+		fall = preset.fall,
+		climb = preset.climb,
+		swim = preset.swim,
+		swimidle = preset.swimidle,
+		sit = preset.sit,
+	}
 
-	btn.Size = UDim2.new(0,w,0,h)
+	for stateName, animId in pairs(stateMap) do
+		local stateObj = animate:FindFirstChild(stateName)
+		if stateObj then
+			setAnimationId(stateObj, animId)
+		else
+			ensureAnimation(animate, stateName, animId)
+		end
+	end
+end
 
-	x = x + w + padding
+local function applyCurrentPreset()
+	local char = player.Character
+	if not char then
+		return
+	end
+	applyPresetToAnimate(char, getPreset())
+end
 
-	if h > rowH then rowH = h end
+local function makeR15Preview(animId)
+	local preview = Instance.new("ViewportFrame")
+	preview.Size = UDim2.new(0, 30, 0, 30)
+	preview.BackgroundColor3 = Color3.fromRGB(120, 15, 15)
+	preview.BackgroundTransparency = 0.1
+	preview.BorderSizePixel = 0
+	preview.ZIndex = 4
+	makeCorner(preview, 8)
+	makeStroke(preview, 1, 0.12, Color3.fromRGB(255, 0, 0))
 
-	btn.MouseButton1Click:Connect(function()
+	local world = Instance.new("WorldModel")
+	world.Parent = preview
 
-		playAnim(data)
+	local camera = Instance.new("Camera")
+	camera.Parent = preview
+	preview.CurrentCamera = camera
 
+	local ok, model = pcall(function()
+		return Players:CreateHumanoidModelFromDescription(Instance.new("HumanoidDescription"), Enum.HumanoidRigType.R15)
 	end)
 
+	if ok and model then
+		model.Parent = world
+		model:PivotTo(CFrame.new(0, 0, 0))
+
+		for _, obj in ipairs(model:GetDescendants()) do
+			if obj:IsA("BasePart") then
+				obj.Color = Color3.fromRGB(200, 200, 200)
+				obj.Material = Enum.Material.Plastic
+				obj.Transparency = 0
+				obj.CastShadow = false
+			end
+		end
+
+		local hum = model:FindFirstChildOfClass("Humanoid")
+		local animator = hum and hum:FindFirstChildOfClass("Animator")
+		if hum and not animator then
+			animator = Instance.new("Animator")
+			animator.Parent = hum
+		end
+
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(animId)
+
+		if animator then
+			local track = animator:LoadAnimation(anim)
+			track.Looped = true
+			track.Priority = Enum.AnimationPriority.Action4
+			track:Play(0)
+			task.defer(function()
+				task.wait(0.05)
+				pcall(function()
+					track.TimePosition = 1
+					track:AdjustSpeed(0)
+				end)
+			end)
+		end
+
+		camera.CFrame = CFrame.new(Vector3.new(0, 1.6, 5), Vector3.new(0, 1.4, 0))
+		task.delay(0.2, function()
+			pcall(function()
+				anim:Destroy()
+			end)
+		end)
+	end
+
+	return preview
 end
 
-for _,a in ipairs(animations) do
+local function setupUI()
+	local open = Instance.new("TextButton")
+	open.Size = UDim2.new(0, 40, 0, 40)
+	open.Position = UDim2.new(0.5, -23, 0.2, 0)
+	open.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	open.BackgroundTransparency = 0.02
+	open.BorderSizePixel = 0
+	open.Text = "Hoạt ảnh"
+	open.Font = Enum.Font.GothamBlack
+	open.TextScaled = true
+	open.TextColor3 = Color3.fromRGB(255, 242, 242)
+	open.Active = true
+	open.Draggable = true
+	open.AutoButtonColor = false
+	open.Selectable = false
+	open.ZIndex = 100
+	open.Parent = gui
+	makeCorner(open, 6)
+	makeStroke(open, 1.4, 0.12, Color3.fromRGB(255, 0, 0))
+	local openGrad = makeGradient(open, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.18, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+		ColorSequenceKeypoint.new(0.82, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 25)
+	openGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.08),
+		NumberSequenceKeypoint.new(1, 0.03)
+	})
+	local openTextGrad = styleBomText(open)
 
-	addButton(a)
+	local openGlow = Instance.new("ImageLabel")
+	openGlow.BackgroundTransparency = 1
+	openGlow.Size = UDim2.new(1, 18, 1, 18)
+	openGlow.Position = UDim2.new(0, -9, 0, -9)
+	openGlow.Image = "rbxassetid://5028857084"
+	openGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	openGlow.ImageTransparency = 0.92
+	openGlow.ScaleType = Enum.ScaleType.Slice
+	openGlow.SliceCenter = Rect.new(24, 24, 276, 276)
+	openGlow.ZIndex = 99
+	openGlow.Parent = open
 
+	local main = Instance.new("Frame")
+	main.Size = UDim2.new(0, 304, 0, 246)
+	main.Position = UDim2.new(0.5, -152, 0.55, -123)
+	main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	main.BackgroundTransparency = 0.03
+	main.BorderSizePixel = 0
+	main.Active = true
+	main.Draggable = true
+	main.Visible = false
+	main.ClipsDescendants = true
+	main.Parent = gui
+	makeCorner(main, 12)
+	makeStroke(main, 1.45, 0.12, Color3.fromRGB(255, 0, 0))
+	local mainGrad = makeGradient(main, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.18, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+		ColorSequenceKeypoint.new(0.82, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 22)
+	mainGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.08),
+		NumberSequenceKeypoint.new(1, 0.03)
+	})
+
+	local glow = Instance.new("ImageLabel")
+	glow.BackgroundTransparency = 1
+	glow.Size = UDim2.new(1, 30, 1, 30)
+	glow.Position = UDim2.new(0, -15, 0, -15)
+	glow.Image = "rbxassetid://5028857084"
+	glow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	glow.ImageTransparency = 0.92
+	glow.ScaleType = Enum.ScaleType.Slice
+	glow.SliceCenter = Rect.new(24, 24, 276, 276)
+	glow.ZIndex = 0
+	glow.Parent = main
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(1, -100, 0, 18)
+	title.Position = UDim2.new(0, 9, 0, 5)
+	title.BackgroundTransparency = 1
+	title.Text = "Hoạt Ảnh"
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.TextSize = 14
+	title.ZIndex = 4
+	title.Parent = main
+	local titleGrad = styleBomText(title)
+
+	local close = Instance.new("TextButton")
+	close.Size = UDim2.new(0, 22, 0, 22)
+	close.Position = UDim2.new(1, -28, 0, 4)
+	close.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+	close.BackgroundTransparency = 0.02
+	close.BorderSizePixel = 0
+	close.Text = "×"
+	close.Font = Enum.Font.GothamBlack
+	close.TextSize = 14
+	close.TextColor3 = Color3.fromRGB(255, 242, 242)
+	close.AutoButtonColor = false
+	close.ZIndex = 4
+	close.Parent = main
+	makeCorner(close, 7)
+	makeStroke(close, 1, 0.12, Color3.fromRGB(255, 0, 0))
+	local closeGrad = makeGradient(close, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	}), 0)
+	local closeTextGrad = styleBomText(close)
+
+	local offBtn = Instance.new("TextButton")
+	offBtn.Size = UDim2.new(0, 36, 0, 22)
+	offBtn.Position = UDim2.new(1, -70, 0, 4)
+	offBtn.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+	offBtn.BackgroundTransparency = 0.02
+	offBtn.BorderSizePixel = 0
+	offBtn.Text = "Tắt"
+	offBtn.Font = Enum.Font.GothamBlack
+	offBtn.TextSize = 12
+	offBtn.TextColor3 = Color3.fromRGB(255, 242, 242)
+	offBtn.AutoButtonColor = false
+	offBtn.ZIndex = 4
+	offBtn.Parent = main
+	makeCorner(offBtn, 7)
+	makeStroke(offBtn, 1, 0.12, Color3.fromRGB(255, 0, 0))
+	local offGrad = makeGradient(offBtn, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	}), 0)
+	local offTextGrad = styleBomText(offBtn)
+
+	local line = Instance.new("Frame")
+	line.Size = UDim2.new(1, -16, 0, 1)
+	line.Position = UDim2.new(0, 8, 0, 28)
+	line.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	line.BackgroundTransparency = 0.68
+	line.BorderSizePixel = 0
+	line.ZIndex = 2
+	line.Parent = main
+	local lineGrad = makeGradient(line, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 90, 90)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 0)
+
+	local scroll = Instance.new("ScrollingFrame")
+	scroll.Size = UDim2.new(1, -12, 1, -36)
+	scroll.Position = UDim2.new(0, 6, 0, 32)
+	scroll.BackgroundTransparency = 1
+	scroll.BorderSizePixel = 0
+	scroll.ScrollBarThickness = 5
+	scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	scroll.ZIndex = 3
+	scroll.Parent = main
+
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop = UDim.new(0, 2)
+	pad.PaddingBottom = UDim.new(0, 6)
+	pad.PaddingLeft = UDim.new(0, 2)
+	pad.PaddingRight = UDim.new(0, 2)
+	pad.Parent = scroll
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 6)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.FillDirection = Enum.FillDirection.Vertical
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	layout.VerticalAlignment = Enum.VerticalAlignment.Top
+	layout.Parent = scroll
+	layout:Destroy()
+
+	local currentTrack
+	local rows = {}
+	local currentCharacterToken = 0
+
+	local function stopAnim()
+		if currentTrack then
+			pcall(function()
+				currentTrack:Stop()
+			end)
+			pcall(function()
+				currentTrack:Destroy()
+			end)
+			currentTrack = nil
+		end
+	end
+
+	local function clearRows()
+		for _, child in ipairs(rows) do
+			if child and child.Parent then
+				child:Destroy()
+			end
+		end
+		table.clear(rows)
+	end
+
+	local function makeRow(data)
+		local row = Instance.new("TextButton")
+		row.Size = UDim2.new(1, -4, 0, 38)
+		row.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+		row.BackgroundTransparency = 0.02
+		row.BorderSizePixel = 0
+		row.AutoButtonColor = false
+		row.Text = ""
+		row.ZIndex = 4
+		row.Parent = scroll
+		makeCorner(row, 8)
+		makeStroke(row, 1, 0.14, Color3.fromRGB(255, 0, 0))
+		makeGradient(row, ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+		}), 90)
+
+		local preview = makeR15Preview(data.run)
+		preview.Size = UDim2.new(0, 30, 0, 30)
+		preview.Position = UDim2.new(0, 4, 0.5, -15)
+		preview.Parent = row
+
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Position = UDim2.new(0, 40, 0, 0)
+		lbl.Size = UDim2.new(1, -46, 1, 0)
+		lbl.Text = data.name
+		lbl.TextWrapped = false
+		lbl.TextTruncate = Enum.TextTruncate.None
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.TextYAlignment = Enum.TextYAlignment.Center
+		lbl.TextSize = 13
+		lbl.ZIndex = 5
+		lbl.Parent = row
+		styleBomText(lbl)
+
+		row.MouseEnter:Connect(function()
+			TweenService:Create(row, TweenInfo.new(0.12), {
+				BackgroundColor3 = Color3.fromRGB(90, 0, 0)
+			}):Play()
+		end)
+
+		row.MouseLeave:Connect(function()
+			TweenService:Create(row, TweenInfo.new(0.12), {
+				BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+			}):Play()
+		end)
+
+		row.Activated:Connect(function()
+			currentPresetIndex = table.find(animations, data) or 1
+			applyCurrentPreset()
+		end)
+
+		return row
+	end
+
+	local function layoutRows()
+		clearRows()
+
+		local y = 0
+		local rowHeight = 38
+		local gap = 6
+
+		for _, data in ipairs(animations) do
+			local row = makeRow(data)
+			row.Size = UDim2.new(1, -4, 0, rowHeight)
+			row.Position = UDim2.new(0, 0, 0, y)
+			y = y + rowHeight + gap
+		end
+
+		scroll.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	local function bindCharacter(character)
+		currentCharacterToken += 1
+		local token = currentCharacterToken
+
+		local function delayedApply()
+			if token ~= currentCharacterToken then
+				return
+			end
+			task.wait(0.8)
+			if token ~= currentCharacterToken then
+				return
+			end
+			if enabled then
+				applyPresetToAnimate(character, getPreset())
+			end
+		end
+
+		task.spawn(delayedApply)
+
+		character.ChildAdded:Connect(function(child)
+			if token ~= currentCharacterToken then
+				return
+			end
+			if child.Name == "Animate" then
+				task.defer(function()
+					if token == currentCharacterToken and enabled then
+						applyPresetToAnimate(character, getPreset())
+					end
+				end)
+			end
+		end)
+	end
+
+	if player.Character then
+		bindCharacter(player.Character)
+	end
+
+	player.CharacterAdded:Connect(function(character)
+		stopAnim()
+		bindCharacter(character)
+	end)
+
+	local function showFrame()
+		main.Visible = true
+	end
+
+	local function hideFrame()
+		main.Visible = false
+	end
+
+	layoutRows()
+
+	scroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		task.defer(layoutRows)
+	end)
+
+	open.MouseButton1Click:Connect(function()
+		main.Visible = not main.Visible
+	end)
+
+	close.MouseButton1Click:Connect(function()
+		hideFrame()
+	end)
+
+	offBtn.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		offBtn.Text = enabled and "Tắt" or "Bật"
+		if enabled then
+			applyCurrentPreset()
+		else
+			stopAnim()
+		end
+	end)
+
+	task.spawn(function()
+		while gui.Parent do
+			task.wait(0.05)
+			local r = (tick() * 25) % 360
+			titleGrad.Rotation = r
+			closeTextGrad.Rotation = r
+			offTextGrad.Rotation = r
+			mainGrad.Rotation = (tick() * 12) % 360
+			lineGrad.Rotation = (tick() * 20) % 360
+			openTextGrad.Rotation = r
+			openGrad.Rotation = (tick() * 18) % 360
+			glow.ImageTransparency = 0.92 - (math.sin(tick() * 2) * 0.02)
+			openGlow.ImageTransparency = 0.92 - (math.sin(tick() * 2) * 0.02)
+		end
+	end)
 end
 
-scroll.CanvasSize = UDim2.new(0,0,0,y + rowH + padding)
+setupUI()
 
-open.MouseButton1Click:Connect(function()
+]]},
 
-	frame.Visible = not frame.Visible
+{Text = {vn = "Biểu cảm R15", en = "Animation R15"}, Script = [[
 
-end)
+local Players = game:GetService("Players")
+local TextService = game:GetService("TextService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
-close.MouseButton1Click:Connect(function()
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-	frame.Visible = false
+for _, v in ipairs(playerGui:GetChildren()) do
+	if v and v.Name == "AnimFEGui" then
+		pcall(function()
+			v:Destroy()
+		end)
+	end
+end
 
-end)
+local gui = Instance.new("ScreenGui")
+gui.Name = "AnimFEGui"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = playerGui
 
-offBtn.MouseButton1Click:Connect(function()
+local animations = {
+	{name = "Nhảy Đùa", id = 124982597491660, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Trực Thăng", id = 95301257497525, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Trực Thăng 2", id = 91257498644328, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Lắc Người", id = 108171959207138, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Dẫm Đạp", id = 115048845533448, speed = 1.4, timepos = 0, looped = true, freezeonend = false},
+	{name = "Cá Vẫy", id = 79075971527754, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Gangnamsyle", id = 129764254213842, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Cute", id = 88315693621494, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Vòng Không", id = 94324173536622, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tim Trái", id = 110936682778213, speed = 0, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tim Phải", id = 84671941093489, speed = 0, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tu Luyện", id = 86872878957632, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Cổ Điển", id = 88455578674030, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ngồi", id = 97185364700038, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tư Thế Chiến Đấu", id = 116763940575803, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ai Thế", id = 81389876138766, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ngồi Lắc", id = 130995344283026, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ngồi Lắc 2", id = 131836270858895, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Con Sâu", id = 90333292347820, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Rắn", id = 98476854035224, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Sắp Gục Ngã", id = 129787664584610, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tử Hình", id = 113475147402830, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nằm Chống Cằm", id = 80754582835479, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Che Mắt", id = 92266904563270, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Chỉ Thẳng", id = 122120443600865, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Khinh Thường", id = 120629563851640, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nằm Lơ Lửng", id = 77840765435893, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Vành Đai", id = 109873544976020, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Không Đầu", id = 78837807518622, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Tôi!", id = 103235915424832, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Máy Bay", id = 82135680487389, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Thể Hiện", id = 90802740360125, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Trung Quốc", id = 131758838511368, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Chân Không Chạm Đất", id = 74288964113793, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Xe", id = 108747312576405, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Theo Trend", id = 93497729736287, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Xe Tăng", id = 94915612757079, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Đi Cổ Điển", id = 107806791584829, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Sinh Vật Kì Quái", id = 87025086742503, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Skibidi Toilet", id = 127154705636043, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Khóc Lăn", id = 129699431093711, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Suy Nghĩ", id = 127088545449493, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Giả Chết", id = 88130117312312, speed = 1, timepos = 0, looped = false, freezeonend = true},
+	{name = "Lắc Đầu", id = 135611169366768, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Kiểm Tra Trang Phục", id = 81176957565811, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Đầu Hàng", id = 100537772865440, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Giả Định", id = 91294374426630, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Cúi Nhảy", id = 121966805049108, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Vui Mừng", id = 78653596566468, speed = 1, timepos = 0, looped = true, freezeonend = true},
+	{name = "Bóng Rổ", id = 92854797386719, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Vẹt", id = 101810746304426, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Bị Bắn", id = 102691551292124, speed = 1, timepos = 0, looped = false, freezeonend = true},
+	{name = "Ragdoll", id = 136224735234038, speed = 1, timepos = 0, looped = false, freezeonend = true},
+	{name = "Ngồi Buồn", id = 100798804992348, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Ngầu", id = 105459130960429, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhảy Billy", id = 137501135905857, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Bóng", id = 119242308765484, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Búa", id = 91423662648449, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Điệu Quái Vật", id = 137883764619555, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ngồi Xoay", id = 107217181254431, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhào Lộn Nằm", id = 131205329995035, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nổi", id = 89523370947906, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Chào", id = 103041144411206, speed = 1, timepos = 0, looped = false, freezeonend = true},
+	{name = "Bị Nhập", id = 90708290447388, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Lướt Ván", id = 100663712757148, speed = 0.8, timepos = 0, looped = true, freezeonend = false},
+	{name = "Sinh Vật Cao", id = 118864464720628, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Ngồi Như Mèo", id = 99424293618796, speed = 1, timepos = 0, looped = true, freezeonend = false},
+   {name = "Nhìn xuống", id = 91133306449431, speed = 1, timepos = 0, looped = true, freezeonend = false},
+   {name = "Fake Fling", id = 135532093218300, speed = 10, timepos = 0, looped = true, freezeonend = false},
+}
 
-	stopAnim()
+local function styleBomText(obj)
+	if not obj then
+		return nil
+	end
+	obj.TextColor3 = Color3.fromRGB(255, 242, 242)
+	obj.Font = Enum.Font.GothamBlack
+	local g = obj:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+	g.Rotation = 0
+	g.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	})
+	g.Parent = obj
+	return g
+end
 
-end)
+local function makeCorner(obj, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, radius or 10)
+	c.Parent = obj
+	return c
+end
+
+local function makeStroke(obj, thickness, transparency, color)
+	local s = Instance.new("UIStroke")
+	s.Thickness = thickness or 1
+	s.Transparency = transparency or 0
+	s.Color = color or Color3.fromRGB(255, 0, 0)
+	s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	s.LineJoinMode = Enum.LineJoinMode.Round
+	s.Parent = obj
+	return s
+end
+
+local function makeGradient(obj, sequence, rotation)
+	local g = Instance.new("UIGradient")
+	g.Color = sequence
+	g.Rotation = rotation or 0
+	g.Parent = obj
+	return g
+end
+
+local function getChar()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	local animator = hum and hum:FindFirstChildOfClass("Animator")
+	if hum and not animator then
+		animator = Instance.new("Animator")
+		animator.Parent = hum
+	end
+	return char, hum, animator
+end
+
+local function getButtonWidth(labelText, maxWidth)
+	local bounds = TextService:GetTextSize(labelText, 13, Enum.Font.GothamBlack, Vector2.new(1000, 1000))
+	return math.clamp(bounds.X + 78, 150, maxWidth)
+end
+
+
+local function makeR15Preview(animId)
+	local preview = Instance.new("ViewportFrame")
+	preview.Size = UDim2.new(0, 30, 0, 30)
+	preview.BackgroundColor3 = Color3.fromRGB(120, 15, 15)
+	preview.BackgroundTransparency = 0.1
+	preview.BorderSizePixel = 0
+	preview.ZIndex = 4
+	makeCorner(preview, 8)
+	makeStroke(preview, 1, 0.12, Color3.fromRGB(255, 0, 0))
+
+	local world = Instance.new("WorldModel")
+	world.Parent = preview
+
+	local camera = Instance.new("Camera")
+	camera.Parent = preview
+	preview.CurrentCamera = camera
+
+	local ok, model = pcall(function()
+		return Players:CreateHumanoidModelFromDescription(Instance.new("HumanoidDescription"), Enum.HumanoidRigType.R15)
+	end)
+
+	if ok and model then
+		model.Parent = world
+		model:PivotTo(CFrame.new(0, 0, 0))
+
+		for _, obj in ipairs(model:GetDescendants()) do
+			if obj:IsA("BasePart") then
+				obj.Color = Color3.fromRGB(200, 200, 200)
+				obj.Material = Enum.Material.Plastic
+				obj.Transparency = 0
+				obj.CastShadow = false
+			end
+		end
+
+		local hum = model:FindFirstChildOfClass("Humanoid")
+		local animator = hum and hum:FindFirstChildOfClass("Animator")
+		if hum and not animator then
+			animator = Instance.new("Animator")
+			animator.Parent = hum
+		end
+
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(animId)
+
+		if animator then
+			local track = animator:LoadAnimation(anim)
+			track.Looped = true
+			track.Priority = Enum.AnimationPriority.Action4
+			track:Play(0)
+			task.defer(function()
+				task.wait(0.05)
+				pcall(function()
+					track.TimePosition = 1
+					track:AdjustSpeed(0)
+				end)
+			end)
+		end
+
+		camera.CFrame = CFrame.new(Vector3.new(0, 1.6, 5), Vector3.new(0, 1.4, 0))
+		task.delay(0.2, function()
+			pcall(function()
+				anim:Destroy()
+			end)
+		end)
+	end
+
+	return preview
+end
+local function setupUI()
+	local open = Instance.new("TextButton")
+	open.Size = UDim2.new(0, 46, 0, 46)
+	open.Position = UDim2.new(0.5, -23, 0.2, 0)
+	open.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	open.BackgroundTransparency = 0.02
+	open.BorderSizePixel = 0
+	open.Text = "Anim"
+	open.Font = Enum.Font.GothamBlack
+	open.TextSize = 14
+	open.TextColor3 = Color3.fromRGB(255, 242, 242)
+	open.Active = true
+	open.Draggable = true
+	open.AutoButtonColor = false
+	open.Selectable = false
+	open.ZIndex = 100
+	open.Parent = gui
+	makeCorner(open, 6)
+	makeStroke(open, 1.4, 0.12, Color3.fromRGB(255, 0, 0))
+	local openGrad = makeGradient(open, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.18, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+		ColorSequenceKeypoint.new(0.82, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 25)
+	openGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.08),
+		NumberSequenceKeypoint.new(1, 0.03)
+	})
+	local openTextGrad = styleBomText(open)
+
+	local openGlow = Instance.new("ImageLabel")
+	openGlow.BackgroundTransparency = 1
+	openGlow.Size = UDim2.new(1, 18, 1, 18)
+	openGlow.Position = UDim2.new(0, -9, 0, -9)
+	openGlow.Image = "rbxassetid://5028857084"
+	openGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	openGlow.ImageTransparency = 0.92
+	openGlow.ScaleType = Enum.ScaleType.Slice
+	openGlow.SliceCenter = Rect.new(24, 24, 276, 276)
+	openGlow.ZIndex = 99
+	openGlow.Parent = open
+
+	local main = Instance.new("Frame")
+	main.Size = UDim2.new(0, 304, 0, 246)
+	main.Position = UDim2.new(0.5, -152, 0.55, -123)
+	main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
+	main.BackgroundTransparency = 0.03
+	main.BorderSizePixel = 0
+	main.Active = true
+	main.Draggable = true
+	main.Visible = false
+	main.ClipsDescendants = true
+	main.Parent = gui
+	makeCorner(main, 12)
+	makeStroke(main, 1.45, 0.12, Color3.fromRGB(255, 0, 0))
+	local mainGrad = makeGradient(main, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.18, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(24, 24, 28)),
+		ColorSequenceKeypoint.new(0.82, Color3.fromRGB(75, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 22)
+	mainGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.08),
+		NumberSequenceKeypoint.new(1, 0.03)
+	})
+
+	local glow = Instance.new("ImageLabel")
+	glow.BackgroundTransparency = 1
+	glow.Size = UDim2.new(1, 30, 1, 30)
+	glow.Position = UDim2.new(0, -15, 0, -15)
+	glow.Image = "rbxassetid://5028857084"
+	glow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	glow.ImageTransparency = 0.92
+	glow.ScaleType = Enum.ScaleType.Slice
+	glow.SliceCenter = Rect.new(24, 24, 276, 276)
+	glow.ZIndex = 0
+	glow.Parent = main
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(1, -100, 0, 18)
+	title.Position = UDim2.new(0, 9, 0, 5)
+	title.BackgroundTransparency = 1
+	title.Text = "Biểu cảm"
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.TextSize = 14
+	title.ZIndex = 4
+	title.Parent = main
+	local titleGrad = styleBomText(title)
+
+	local close = Instance.new("TextButton")
+	close.Size = UDim2.new(0, 22, 0, 22)
+	close.Position = UDim2.new(1, -28, 0, 4)
+	close.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+	close.BackgroundTransparency = 0.02
+	close.BorderSizePixel = 0
+	close.Text = "×"
+	close.Font = Enum.Font.GothamBlack
+	close.TextSize = 14
+	close.TextColor3 = Color3.fromRGB(255, 242, 242)
+	close.AutoButtonColor = false
+	close.ZIndex = 4
+	close.Parent = main
+	makeCorner(close, 7)
+	makeStroke(close, 1, 0.12, Color3.fromRGB(255, 0, 0))
+	local closeGrad = makeGradient(close, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	}), 0)
+	local closeTextGrad = styleBomText(close)
+
+	local offBtn = Instance.new("TextButton")
+	offBtn.Size = UDim2.new(0, 36, 0, 22)
+	offBtn.Position = UDim2.new(1, -70, 0, 4)
+	offBtn.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+	offBtn.BackgroundTransparency = 0.02
+	offBtn.BorderSizePixel = 0
+	offBtn.Text = "Tắt"
+	offBtn.Font = Enum.Font.GothamBlack
+	offBtn.TextSize = 12
+	offBtn.TextColor3 = Color3.fromRGB(255, 242, 242)
+	offBtn.AutoButtonColor = false
+	offBtn.ZIndex = 4
+	offBtn.Parent = main
+	makeCorner(offBtn, 7)
+	makeStroke(offBtn, 1, 0.12, Color3.fromRGB(255, 0, 0))
+	local offGrad = makeGradient(offBtn, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	}), 0)
+	local offTextGrad = styleBomText(offBtn)
+
+	local line = Instance.new("Frame")
+	line.Size = UDim2.new(1, -16, 0, 1)
+	line.Position = UDim2.new(0, 8, 0, 28)
+	line.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	line.BackgroundTransparency = 0.68
+	line.BorderSizePixel = 0
+	line.ZIndex = 2
+	line.Parent = main
+	local lineGrad = makeGradient(line, ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 90, 90)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+	}), 0)
+
+	local scroll = Instance.new("ScrollingFrame")
+	scroll.Size = UDim2.new(1, -12, 1, -36)
+	scroll.Position = UDim2.new(0, 6, 0, 32)
+	scroll.BackgroundTransparency = 1
+	scroll.BorderSizePixel = 0
+	scroll.ScrollBarThickness = 5
+	scroll.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+	scroll.ZIndex = 3
+	scroll.Parent = main
+
+	local pad = Instance.new("UIPadding")
+	pad.PaddingTop = UDim.new(0, 2)
+	pad.PaddingBottom = UDim.new(0, 6)
+	pad.PaddingLeft = UDim.new(0, 2)
+	pad.PaddingRight = UDim.new(0, 2)
+	pad.Parent = scroll
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 6)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.FillDirection = Enum.FillDirection.Vertical
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	layout.VerticalAlignment = Enum.VerticalAlignment.Top
+	layout.Parent = scroll
+	layout:Destroy()
+
+	local currentTrack
+	local humanoid
+	local animator
+	local rows = {}
+
+	local function setupHumanoid()
+		local _, hum, ani = getChar()
+		humanoid = hum
+		animator = ani
+	end
+
+	setupHumanoid()
+
+	player.CharacterAdded:Connect(function()
+		task.wait(1)
+		setupHumanoid()
+	end)
+
+	local function stopAnim()
+		if currentTrack then
+			pcall(function()
+				currentTrack:Stop()
+			end)
+			pcall(function()
+				currentTrack:Destroy()
+			end)
+			currentTrack = nil
+		end
+	end
+
+	local function playAnim(data)
+		if not animator then
+			setupHumanoid()
+		end
+		if not animator then
+			return
+		end
+
+		stopAnim()
+
+		local anim = Instance.new("Animation")
+		anim.AnimationId = "rbxassetid://" .. tostring(data.id)
+
+		local track = animator:LoadAnimation(anim)
+		track.Looped = data.looped
+		track.Priority = Enum.AnimationPriority.Action4
+		currentTrack = track
+
+		track:Play()
+		track:AdjustSpeed(data.speed)
+
+		if data.timepos and data.timepos > 0 then
+			track.TimePosition = data.timepos
+		end
+
+		if data.freezeonend then
+			track.Stopped:Connect(function()
+				pcall(function()
+					track:AdjustSpeed(0)
+				end)
+			end)
+		end
+
+		task.delay(0.2, function()
+			pcall(function()
+				anim:Destroy()
+			end)
+		end)
+	end
+
+	local function clearRows()
+		for _, child in ipairs(rows) do
+			if child and child.Parent then
+				child:Destroy()
+			end
+		end
+		table.clear(rows)
+	end
+
+	local function createRow(data)
+		local row = Instance.new("TextButton")
+		row.Size = UDim2.new(1, -4, 0, 38)
+		row.BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+		row.BackgroundTransparency = 0.02
+		row.BorderSizePixel = 0
+		row.AutoButtonColor = false
+		row.Text = ""
+		row.ZIndex = 4
+		row.Parent = scroll
+		makeCorner(row, 8)
+		local rowStroke = makeStroke(row, 1, 0.14, Color3.fromRGB(255, 0, 0))
+		local rowGrad = makeGradient(row, ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+		}), 90)
+
+		local preview = makeR15Preview(data.id)
+		preview.Size = UDim2.new(0, 30, 0, 30)
+		preview.Position = UDim2.new(0, 4, 0.5, -15)
+		preview.Parent = row
+
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Position = UDim2.new(0, 40, 0, 0)
+		lbl.Size = UDim2.new(1, -46, 1, 0)
+		lbl.Text = data.name
+		lbl.TextWrapped = false
+		lbl.TextTruncate = Enum.TextTruncate.None
+		lbl.TextXAlignment = Enum.TextXAlignment.Left
+		lbl.TextYAlignment = Enum.TextYAlignment.Center
+		lbl.TextSize = 13
+		lbl.ZIndex = 5
+		lbl.Parent = row
+		local lblGrad = styleBomText(lbl)
+
+		row.MouseEnter:Connect(function()
+			TweenService:Create(row, TweenInfo.new(0.12), {
+				BackgroundColor3 = Color3.fromRGB(90, 0, 0)
+			}):Play()
+		end)
+
+		row.MouseLeave:Connect(function()
+			TweenService:Create(row, TweenInfo.new(0.12), {
+				BackgroundColor3 = Color3.fromRGB(68, 0, 0)
+			}):Play()
+		end)
+
+		row.Activated:Connect(function()
+			playAnim(data)
+		end)
+
+		return row, lblGrad, rowStroke, rowGrad
+	end
+
+	local function layoutRows()
+		clearRows()
+
+		local y = 0
+		local rowHeight = 38
+		local gap = 6
+
+		for _, data in ipairs(animations) do
+			local row = createRow(data)
+			row.Size = UDim2.new(1, -4, 0, rowHeight)
+			row.Position = UDim2.new(0, 0, 0, y)
+			y = y + rowHeight + gap
+		end
+
+		scroll.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	scroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		task.defer(layoutRows)
+	end)
+
+	task.defer(layoutRows)
+
+	local opened = false
+
+	local function showFrame()
+		main.Visible = true
+	end
+
+	local function hideFrame()
+		main.Visible = false
+	end
+
+	open.MouseButton1Click:Connect(function()
+		opened = not opened
+		if opened then
+			showFrame()
+		else
+			hideFrame()
+		end
+	end)
+
+	close.MouseButton1Click:Connect(function()
+		opened = false
+		hideFrame()
+	end)
+
+	offBtn.MouseButton1Click:Connect(function()
+		stopAnim()
+	end)
+
+	task.spawn(function()
+		while gui.Parent do
+			task.wait(0.05)
+			local r = (tick() * 25) % 360
+			titleGrad.Rotation = r
+			closeTextGrad.Rotation = r
+			offTextGrad.Rotation = r
+			mainGrad.Rotation = (tick() * 12) % 360
+			lineGrad.Rotation = (tick() * 20) % 360
+			openTextGrad.Rotation = r
+			openGrad.Rotation = (tick() * 18) % 360
+			glow.ImageTransparency = 0.92 - (math.sin(tick() * 2) * 0.02)
+			openGlow.ImageTransparency = 0.92 - (math.sin(tick() * 2) * 0.02)
+		end
+	end)
+end
+
+setupUI()
 
 ]]},
 
