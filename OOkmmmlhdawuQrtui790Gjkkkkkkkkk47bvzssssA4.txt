@@ -1342,11 +1342,12 @@ local function loadFlyAnimations(hum)
 	}
 else
 	animIds = {
-		idle = "rbxassetid://77529400769588",
+		idle = "rbxassetid://125340742319097",
 		slow = "rbxassetid://92365791487740",
 		fast = "rbxassetid://85064366773524"
 	}
 end
+-- Idlie 1:77529400769588 Idle2: 125340742319097
 
 	for name, id in pairs(animIds) do
 		local anim = Instance.new("Animation")
@@ -1402,9 +1403,14 @@ local function setFlyAnimation(speedValue, moving)
 	end
 
 	currentFlyTrack = track
-	pcall(function()
-		currentFlyTrack:Play(fadeTime, 1, 1)
-	end)
+
+if currentRigType == Enum.HumanoidRigType.R15 and name == "idle" then
+	speed = 1.5
+end
+
+pcall(function()
+	currentFlyTrack:Play(fadeTime, 1, 1)
+end)
 end
 
 local function startTranslateLoop()
