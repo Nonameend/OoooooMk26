@@ -947,7 +947,7 @@ end)
 
 {Text = {vn = "Bay V2", en = "Fly V2"}, Script = [[
 
-local Players = game.Players
+ local Players = game.Players
 local RunService = game.RunService
 local TweenService = game.TweenService
 local CoreGui = game.CoreGui
@@ -1166,6 +1166,9 @@ local currentFlyTrack = nil
 local currentRigType = nil
 
 local fadeTime = 0.3
+local idleBobToken = 0
+local idleBobRunning = false
+local idleTween = nil
 
 local function getChar()
 	return player.Character
@@ -1259,7 +1262,87 @@ local function setHumanoidStates(hum, enable)
 	end
 end
 
+local function stopIdleBob()
+	idleBobToken = idleBobToken + 1
+	idleBobRunning = false
+
+	if idleTween then
+		pcall(function()
+			idleTween:Cancel()
+		end)
+		idleTween = nil
+	end
+
+	if activeBv then
+		pcall(function()
+			activeBv.Velocity = Vector3.new(0, 0, 0)
+		end)
+	end
+end
+
+local function startIdleBob()
+	if currentRigType ~= Enum.HumanoidRigType.R15 then
+		return
+	end
+
+	if not activeBv then
+		return
+	end
+
+	if idleBobRunning then
+		return
+	end
+
+	idleBobRunning = true
+	idleBobToken = idleBobToken + 1
+	local token = idleBobToken
+	local idleTrack = flyTracks.idle
+
+	task.spawn(function()
+		local up = true
+
+		while nowe and token == idleBobToken do
+			if not activeBv or not activeBv.Parent then
+				break
+			end
+
+			if not currentFlyTrack or currentFlyTrack ~= idleTrack then
+				break
+			end
+
+			if idleTween then
+				pcall(function()
+					idleTween:Cancel()
+				end)
+				idleTween = nil
+			end
+
+			local target = Vector3.new(0, up and 1.49 or -1.5, 0)
+			idleTween = TweenService:Create(
+				activeBv,
+				TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+				{ Velocity = target }
+			)
+			idleTween:Play()
+			idleTween.Completed:Wait()
+
+			up = not up
+		end
+
+		if token == idleBobToken then
+			if activeBv and activeBv.Parent then
+				pcall(function()
+					activeBv.Velocity = Vector3.new(0, 0, 0)
+				end)
+			end
+			idleBobRunning = false
+		end
+	end)
+end
+
 local function destroyBodies()
+	stopIdleBob()
+
 	if rotateTween then
 		pcall(function()
 			rotateTween:Cancel()
@@ -1311,6 +1394,8 @@ local function getAnimator(hum)
 end
 
 local function stopFlyAnimations()
+	stopIdleBob()
+
 	if currentFlyTrack then
 		pcall(function()
 			currentFlyTrack:Stop(fadeTime)
@@ -1336,19 +1421,18 @@ local function loadFlyAnimations(hum)
 	local animIds
 
 	if currentRigType == Enum.HumanoidRigType.R6 then
-	animIds = {
-		idle = "rbxassetid://",
-		move = "rbxassetid://282574440"
-	}
-else
-	animIds = {
-		idle = "rbxassetid://125340742319097",
-		slow = "rbxassetid://92365791487740",
-		fast = "rbxassetid://85064366773524"
-	}
-end
+		animIds = {
+			idle = "rbxassetid://",
+			move = "rbxassetid://282574440"
+		}
+	else
+		animIds = {
+			idle = "rbxassetid://125340742319097",
+			slow = "rbxassetid://92365791487740",
+			fast = "rbxassetid://85064366773524"
+		}
+	end
 -- Idlie 1:77529400769588 Idle2: 125340742319097
-
 	for name, id in pairs(animIds) do
 		local anim = Instance.new("Animation")
 		anim.AnimationId = id
@@ -1393,6 +1477,11 @@ local function setFlyAnimation(speedValue, moving)
 	end
 
 	if currentFlyTrack == track then
+		if name == "idle" then
+			startIdleBob()
+		else
+			stopIdleBob()
+		end
 		return
 	end
 
@@ -1404,13 +1493,20 @@ local function setFlyAnimation(speedValue, moving)
 
 	currentFlyTrack = track
 
-if currentRigType == Enum.HumanoidRigType.R15 and name == "idle" then
-	speed = 1.5
-end
+	if name == "idle" then
+		startIdleBob()
+	else
+		stopIdleBob()
+	end
 
-pcall(function()
-	currentFlyTrack:Play(fadeTime, 1, 1)
-end)
+	local speed = 1
+	if currentRigType == Enum.HumanoidRigType.R15 and name == "idle" then
+		speed = 1.2
+	end
+
+	pcall(function()
+		currentFlyTrack:Play(fadeTime, 1, speed)
+	end)
 end
 
 local function startTranslateLoop()
@@ -1581,6 +1677,7 @@ local function stopFly()
 	nowe = false
 	tpwalking = false
 
+	stopIdleBob()
 	stopTranslateLoop()
 	stopFacingLoop()
 	stopAnimationLoop()
