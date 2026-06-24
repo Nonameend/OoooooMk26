@@ -9568,7 +9568,7 @@ gui.IgnoreGuiInset = true
 gui.Parent = playerGui
 
 local animations = {
-{name = "Trượt", idle = 122257458498464, mood = 14366558676, walk = 122150855457006, run = 82598234841035, jump = 75290611992385, fall = 98600215928904, climb = 88763136693023, swim = 133308483266208, swimidle = 109346520324160, sit = 2506281703},
+{name = "Trượt", idle = 122257458498464, mood = 122257458498464, walk = 122150855457006, run = 82598234841035, jump = 75290611992385, fall = 98600215928904, climb = 88763136693023, swim = 133308483266208, swimidle = 109346520324160, sit = 2506281703},
 {name = "Máy móc", idle = 10921248039, mood = 14366558676, walk = 10921255446, run = 10921250460, jump = 10921252123, fall = 10921251156, climb = 10921247141, swim = 10921253142, swimidle = 10921253767, sit = 2506281703},
 {name = "Dân chơi", idle = 10921071918, mood = 14366558676, walk = 10921082452, run = 10921076136, jump = 10921078135, fall = 10921077030, climb = 10921070953, swim = 10921079380, swimidle = 10921081059, sit = 2506281703},
 {name = "Mệt mỏi", idle = 10921344533, mood = 14366558676, walk = 10921355261, run = 616163682, jump = 10921351278, fall = 10921350320, climb = 10921343576, swim = 10921352344, swimidle = 10921353442, sit = 2506281703},
@@ -9805,7 +9805,7 @@ end
 
 local function setupUI()
 	local open = Instance.new("TextButton")
-	open.Size = UDim2.new(0, 40, 0, 40)
+	open.Size = UDim2.new(0, 46, 0, 46)
 	open.Position = UDim2.new(0.5, -23, 0.2, 0)
 	open.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
 	open.BackgroundTransparency = 0.02
