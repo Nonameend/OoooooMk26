@@ -10266,9 +10266,16 @@ local animations = {
 	{name = "Lướt Ván", id = 100663712757148, speed = 0.8, timepos = 0, looped = true, freezeonend = false},
 	{name = "Sinh Vật Cao", id = 118864464720628, speed = 1, timepos = 0, looped = true, freezeonend = false},
 	{name = "Ngồi Như Mèo", id = 99424293618796, speed = 1, timepos = 0, looped = true, freezeonend = false},
-   {name = "Nhìn xuống", id = 91133306449431, speed = 1, timepos = 0, looped = true, freezeonend = false},
-   {name = "Fake Fling", id = 135532093218300, speed = 10, timepos = 0, looped = true, freezeonend = false},
+	{name = "Nhìn xuống", id = 91133306449431, speed = 1, timepos = 0, looped = true, freezeonend = false},
+	{name = "Fake Fling", id = 135532093218300, speed = 10, timepos = 0, looped = true, freezeonend = false},
+   {name = "Fake tàng hình", id = 94801402358822, speed = 1, timepos = 0, looped = true, freezeonend = false},
 }
+
+local currentTrack = nil
+local currentData = nil
+local lockMode = false
+local humanoid = nil
+local animator = nil
 
 local function styleBomText(obj)
 	if not obj then
@@ -10323,12 +10330,6 @@ local function getChar()
 	end
 	return char, hum, animator
 end
-
-local function getButtonWidth(labelText, maxWidth)
-	local bounds = TextService:GetTextSize(labelText, 13, Enum.Font.GothamBlack, Vector2.new(1000, 1000))
-	return math.clamp(bounds.X + 78, 150, maxWidth)
-end
-
 
 local function makeR15Preview(animId)
 	local preview = Instance.new("ViewportFrame")
@@ -10398,6 +10399,7 @@ local function makeR15Preview(animId)
 
 	return preview
 end
+
 local function setupUI()
 	local open = Instance.new("TextButton")
 	open.Size = UDim2.new(0, 46, 0, 46)
@@ -10442,7 +10444,7 @@ local function setupUI()
 	openGlow.ZIndex = 99
 	openGlow.Parent = open
 
-	local main = Instance.new("Frame")
+local main = Instance.new("Frame")
 	main.Size = UDim2.new(0, 304, 0, 246)
 	main.Position = UDim2.new(0.5, -152, 0.55, -123)
 	main.BackgroundColor3 = Color3.fromRGB(16, 16, 18)
@@ -10573,11 +10575,7 @@ local function setupUI()
 	layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 	layout.VerticalAlignment = Enum.VerticalAlignment.Top
 	layout.Parent = scroll
-	layout:Destroy()
 
-	local currentTrack
-	local humanoid
-	local animator
 	local rows = {}
 
 	local function setupHumanoid()
@@ -10606,6 +10604,8 @@ local function setupUI()
 	end
 
 	local function playAnim(data)
+		currentData = data
+
 		if not animator then
 			setupHumanoid()
 		end
@@ -10665,8 +10665,8 @@ local function setupUI()
 		row.ZIndex = 4
 		row.Parent = scroll
 		makeCorner(row, 8)
-		local rowStroke = makeStroke(row, 1, 0.14, Color3.fromRGB(255, 0, 0))
-		local rowGrad = makeGradient(row, ColorSequence.new({
+		makeStroke(row, 1, 0.14, Color3.fromRGB(255, 0, 0))
+		makeGradient(row, ColorSequence.new({
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
 			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(120, 0, 0)),
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
@@ -10689,7 +10689,7 @@ local function setupUI()
 		lbl.TextSize = 13
 		lbl.ZIndex = 5
 		lbl.Parent = row
-		local lblGrad = styleBomText(lbl)
+		styleBomText(lbl)
 
 		row.MouseEnter:Connect(function()
 			TweenService:Create(row, TweenInfo.new(0.12), {
@@ -10707,7 +10707,7 @@ local function setupUI()
 			playAnim(data)
 		end)
 
-		return row, lblGrad, rowStroke, rowGrad
+		table.insert(rows, row)
 	end
 
 	local function layoutRows()
@@ -10718,7 +10718,8 @@ local function setupUI()
 		local gap = 6
 
 		for _, data in ipairs(animations) do
-			local row = createRow(data)
+			createRow(data)
+			local row = rows[#rows]
 			row.Size = UDim2.new(1, -4, 0, rowHeight)
 			row.Position = UDim2.new(0, 0, 0, y)
 			y = y + rowHeight + gap
@@ -10735,30 +10736,44 @@ local function setupUI()
 
 	local opened = false
 
-	local function showFrame()
-		main.Visible = true
-	end
-
-	local function hideFrame()
-		main.Visible = false
-	end
-
 	open.MouseButton1Click:Connect(function()
 		opened = not opened
-		if opened then
-			showFrame()
-		else
-			hideFrame()
-		end
+		main.Visible = opened
 	end)
 
 	close.MouseButton1Click:Connect(function()
 		opened = false
-		hideFrame()
+		main.Visible = false
 	end)
 
 	offBtn.MouseButton1Click:Connect(function()
-		stopAnim()
+		lockMode = not lockMode
+		offBtn.Text = lockMode and "Bật" or "Tắt"
+
+		if lockMode and currentData and (not currentTrack or not currentTrack.IsPlaying) then
+			playAnim(currentData)
+		end
+	end)
+
+	RunService.Heartbeat:Connect(function()
+		if not currentTrack then
+			return
+		end
+
+		local _, hum = getChar()
+		if not hum then
+			return
+		end
+
+		if lockMode then
+			if not currentTrack.IsPlaying and currentData then
+				playAnim(currentData)
+			end
+		else
+			if hum.MoveDirection.Magnitude > 0.01 and currentTrack.IsPlaying then
+				stopAnim()
+			end
+		end
 	end)
 
 	task.spawn(function()
