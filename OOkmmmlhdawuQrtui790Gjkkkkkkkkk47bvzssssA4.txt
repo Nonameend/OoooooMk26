@@ -1427,7 +1427,7 @@ local function loadFlyAnimations(hum)
 		}
 	else
 		animIds = {
-			idle = "rbxassetid://93631911983416",
+			idle = "rbxassetid://125340742319097",
 			slow = "rbxassetid://92365791487740",
 			fast = "rbxassetid://85064366773524"
 		}
