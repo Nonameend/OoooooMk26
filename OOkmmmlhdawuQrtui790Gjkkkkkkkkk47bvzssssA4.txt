@@ -10269,6 +10269,7 @@ local animations = {
 	{name = "Nhìn xuống", id = 91133306449431, speed = 1, timepos = 0, looped = true, freezeonend = false},
 	{name = "Fake Fling", id = 135532093218300, speed = 10, timepos = 0, looped = true, freezeonend = false},
    {name = "Fake tàng hình", id = 94801402358822, speed = 1, timepos = 0, looped = true, freezeonend = false},
+   {name = "Liên hoàn đấm", id = 90073013818806, speed = 3, timepos = 0, looped = true, freezeonend = false},
 }
 
 local currentTrack = nil
