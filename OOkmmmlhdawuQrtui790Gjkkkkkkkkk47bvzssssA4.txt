@@ -10270,6 +10270,7 @@ local animations = {
 	{name = "Fake Fling", id = 135532093218300, speed = 10, timepos = 0, looped = true, freezeonend = false},
    {name = "Fake tàng hình", id = 94801402358822, speed = 1, timepos = 0, looped = true, freezeonend = false},
    {name = "Liên hoàn đấm", id = 90073013818806, speed = 3, timepos = 0, looped = true, freezeonend = false},
+   {name = "Cú Đấm Nhanh", id = 119121668711549, speed = 6, timepos = 2, looped = false, freezeonend = false}
 }
 
 local currentTrack = nil
@@ -10630,6 +10631,17 @@ local main = Instance.new("Frame")
 		if data.timepos and data.timepos > 0 then
 			track.TimePosition = data.timepos
 		end
+
+if data.name == "Cú Đấm Nhanh" then
+	task.spawn(function()
+		while currentTrack == track and track.IsPlaying do
+			if track.TimePosition >= 3.5 then
+				track.TimePosition = 2
+			end
+			RunService.Heartbeat:Wait()
+		end
+	end)
+end
 
 		if data.freezeonend then
 			track.Stopped:Connect(function()
